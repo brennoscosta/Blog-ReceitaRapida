@@ -25,18 +25,30 @@ export default function Landing() {
       <Header />
       <main className="pt-16">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-fresh-green to-dark-green text-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+        <div className="relative bg-gradient-to-r from-fresh-green to-dark-green text-white py-20 overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 opacity-20 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1000')"
+            }}
+          ></div>
+          
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+          
+          {/* Content */}
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
               Receitas Rápidas & Deliciosas
             </h2>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-[#05a13a]">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-green-100 drop-shadow-md">
               Descubra pratos saudáveis e saborosos criados automaticamente para facilitar seu dia a dia na cozinha
             </p>
             <Button 
               onClick={scrollToRecipes}
               size="lg"
-              className="bg-warm-orange hover:bg-orange-600 text-white px-8 py-4 text-lg font-semibold"
+              className="bg-warm-orange hover:bg-orange-600 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Explorar Receitas
             </Button>
