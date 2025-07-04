@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
+import { Link } from "wouter";
 
 export default function Landing() {
   const scrollToRecipes = () => {
@@ -45,13 +46,14 @@ export default function Landing() {
               Nosso blog automatizado cria receitas deliciosas e saudáveis usando inteligência artificial. 
               Faça login como administrador para começar a gerar conteúdo automaticamente.
             </p>
-            <Button 
-              onClick={() => window.location.href = "/api/login"}
-              size="lg"
-              className="bg-fresh-green hover:bg-dark-green text-white"
-            >
-              Fazer Login
-            </Button>
+            <Link href="/auth">
+              <Button 
+                size="lg"
+                className="bg-fresh-green hover:bg-dark-green text-white"
+              >
+                Fazer Login
+              </Button>
+            </Link>
           </div>
         </div>
       </main>

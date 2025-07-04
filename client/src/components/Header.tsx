@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -60,15 +61,21 @@ export function Header() {
               </Link>
             )}
             {!isAuthenticated ? (
-              <Button 
-                onClick={() => window.location.href = "/api/login"}
-                className="bg-fresh-green text-white hover:bg-dark-green"
-              >
-                Admin
-              </Button>
+              <Link href="/auth">
+                <Button 
+                  className="bg-fresh-green text-white hover:bg-dark-green"
+                >
+                  Admin
+                </Button>
+              </Link>
             ) : (
               <Button 
-                onClick={() => window.location.href = "/api/logout"}
+                onClick={() => {
+                  fetch("/api/logout", { method: "POST" })
+                    .then(() => {
+                      window.location.href = "/";
+                    });
+                }}
                 variant="outline"
                 className="border-fresh-green text-fresh-green hover:bg-fresh-green hover:text-white"
               >
@@ -128,15 +135,21 @@ export function Header() {
                 </Link>
               )}
               {!isAuthenticated ? (
-                <Button 
-                  onClick={() => window.location.href = "/api/login"}
-                  className="bg-fresh-green text-white hover:bg-dark-green w-fit"
-                >
-                  Admin
-                </Button>
+                <Link href="/auth">
+                  <Button 
+                    className="bg-fresh-green text-white hover:bg-dark-green w-fit"
+                  >
+                    Admin
+                  </Button>
+                </Link>
               ) : (
                 <Button 
-                  onClick={() => window.location.href = "/api/logout"}
+                  onClick={() => {
+                    fetch("/api/logout", { method: "POST" })
+                      .then(() => {
+                        window.location.href = "/";
+                      });
+                  }}
                   variant="outline"
                   className="border-fresh-green text-fresh-green hover:bg-fresh-green hover:text-white w-fit"
                 >

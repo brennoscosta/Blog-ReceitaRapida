@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, requireAuth } from "./auth";
 import { generateRecipe, generateRecipeImage } from "./openai";
 import { insertRecipeSchema, updateRecipeSchema } from "@shared/schema";
 import { z } from "zod";
@@ -19,19 +19,7 @@ function createSlug(title: string): string {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  setupAuth(app);
 
   // Public routes
   app.get("/api/recipes", async (req, res) => {
@@ -61,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected admin routes
-  app.post("/api/recipes/generate", isAuthenticated, async (req, res) => {
+  app.post("/api/recipes/generate", requireAuth, async (req, res) => {
     try {
       const { recipeIdea, difficulty, cookTime } = req.body;
       
@@ -109,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/recipes", isAuthenticated, async (req, res) => {
+  app.post("/api/recipes", requireAuth, async (req, res) => {
     try {
       const validatedData = insertRecipeSchema.parse(req.body);
       
@@ -137,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/recipes/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/recipes/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = updateRecipeSchema.parse(req.body);
@@ -153,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/recipes/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/recipes/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteRecipe(id);

@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import Landing from "@/pages/Landing";
 import RecipePage from "@/pages/RecipePage";
 import AdminPanel from "@/pages/AdminPanel";
+import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,7 +18,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={AuthPage} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />
