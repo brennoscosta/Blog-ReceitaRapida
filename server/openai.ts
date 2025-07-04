@@ -46,8 +46,8 @@ Formato JSON obrigatório:
   "metaDescription": "Meta descrição SEO (max 160 chars)",
   "metaKeywords": "palavra1, palavra2, palavra3",
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
-  "category": "Categoria principal (ex: Sobremesas, Pratos Principais, Lanches)",
-  "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)"
+  "category": "Categoria específica (ex: Massas, Peixes, Mariscos, Carnes, Sobremesas, Bebidas, Saladas)",
+  "subcategory": "Subcategoria detalhada (ex: Pizza, Macarrão, Camarão, Peixe, Bolos, Tortas, Sucos)"
 }
 
 Instruções para cookTime e difficulty:

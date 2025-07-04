@@ -1,15 +1,67 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { RecipeCard } from "@/components/RecipeCard";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X, Filter } from "lucide-react";
 import type { Recipe } from "@shared/schema";
 
 export default function Home() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+  const [selectedHashtag, setSelectedHashtag] = useState<string>("");
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
+
   const { data: recipes, isLoading } = useQuery<Recipe[]>({
-    queryKey: ["/api/recipes"],
+    queryKey: ["/api/recipes", selectedCategory, selectedSubcategory],
   });
+
+  const { data: categories } = useQuery<{categories: string[], subcategories: {[key: string]: string[]}}>({
+    queryKey: ["/api/recipes/categories"],
+  });
+
+  // Filter recipes by hashtag when selectedHashtag changes
+  useEffect(() => {
+    if (!recipes) {
+      setFilteredRecipes([]);
+      return;
+    }
+
+    if (!selectedHashtag) {
+      setFilteredRecipes(recipes);
+      return;
+    }
+
+    const filtered = recipes.filter((recipe) => {
+      const hashtags = recipe.hashtags as string[];
+      return hashtags && hashtags.some((tag: string) => 
+        tag.toLowerCase().includes(selectedHashtag.toLowerCase().replace('#', ''))
+      );
+    });
+    setFilteredRecipes(filtered);
+  }, [recipes, selectedHashtag]);
+
+  const handleHashtagClick = (hashtag: string) => {
+    setSelectedHashtag(hashtag);
+    scrollToRecipes();
+  };
+
+  const handleCategoryClick = (category: string, subcategory?: string) => {
+    setSelectedCategory(category);
+    setSelectedSubcategory(subcategory || "");
+    setSelectedHashtag(""); // Clear hashtag filter when filtering by category
+    scrollToRecipes();
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory("");
+    setSelectedSubcategory("");
+    setSelectedHashtag("");
+  };
 
   const scrollToRecipes = () => {
     const recipesSection = document.getElementById('recipes');
@@ -46,9 +98,106 @@ export default function Home() {
         {/* Latest Recipes */}
         <div id="recipes" className="py-16 bg-light-gray">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">
-              Últimas Receitas
+            <h3 className="text-3xl font-bold text-center text-gray-800 mb-8">
+              {selectedCategory || selectedHashtag ? "Receitas Filtradas" : "Últimas Receitas"}
             </h3>
+
+            {/* Filters Section */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-gray-600" />
+                <h4 className="text-lg font-semibold text-gray-800">Filtros</h4>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas as categorias" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas as categorias</SelectItem>
+                      {categories?.categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Subcategory Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategoria</label>
+                  <Select 
+                    value={selectedSubcategory} 
+                    onValueChange={setSelectedSubcategory}
+                    disabled={!selectedCategory}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas as subcategorias" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas as subcategorias</SelectItem>
+                      {selectedCategory && categories?.subcategories[selectedCategory]?.map((subcategory) => (
+                        <SelectItem key={subcategory} value={subcategory}>
+                          {subcategory}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="flex items-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={clearFilters}
+                    className="w-full"
+                    disabled={!selectedCategory && !selectedSubcategory && !selectedHashtag}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Limpar Filtros
+                  </Button>
+                </div>
+              </div>
+
+              {/* Active Filters */}
+              {(selectedCategory || selectedSubcategory || selectedHashtag) && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-gray-600">Filtros ativos:</span>
+                  {selectedCategory && (
+                    <Badge variant="default" className="bg-fresh-green text-white">
+                      {selectedCategory}
+                      <X 
+                        className="h-3 w-3 ml-1 cursor-pointer" 
+                        onClick={() => setSelectedCategory("")} 
+                      />
+                    </Badge>
+                  )}
+                  {selectedSubcategory && (
+                    <Badge variant="default" className="bg-dark-green text-white">
+                      {selectedSubcategory}
+                      <X 
+                        className="h-3 w-3 ml-1 cursor-pointer" 
+                        onClick={() => setSelectedSubcategory("")} 
+                      />
+                    </Badge>
+                  )}
+                  {selectedHashtag && (
+                    <Badge variant="default" className="bg-blue-500 text-white">
+                      {selectedHashtag}
+                      <X 
+                        className="h-3 w-3 ml-1 cursor-pointer" 
+                        onClick={() => setSelectedHashtag("")} 
+                      />
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
             
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -66,10 +215,15 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : recipes && recipes.length > 0 ? (
+            ) : filteredRecipes && filteredRecipes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {recipes.map((recipe) => (
-                  <RecipeCard key={recipe.id} recipe={recipe} />
+                {filteredRecipes.map((recipe) => (
+                  <RecipeCard 
+                    key={recipe.id} 
+                    recipe={recipe}
+                    onHashtagClick={handleHashtagClick}
+                    onCategoryClick={handleCategoryClick}
+                  />
                 ))}
               </div>
             ) : (
