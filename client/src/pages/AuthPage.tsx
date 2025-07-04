@@ -171,10 +171,7 @@ export default function AuthPage() {
                               <Input 
                                 type="email" 
                                 placeholder="seu@email.com"
-                                value={field.value || ""}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
-                                name={field.name}
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -193,10 +190,7 @@ export default function AuthPage() {
                                 <Input 
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Sua senha"
-                                  value={field.value || ""}
-                                  onChange={field.onChange}
-                                  onBlur={field.onBlur}
-                                  name={field.name}
+                                  {...field}
                                 />
                                 <button
                                   type="button"
@@ -233,10 +227,7 @@ export default function AuthPage() {
                             <FormControl>
                               <Input 
                                 placeholder="Seu nome"
-                                value={field.value || ""}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
-                                name={field.name}
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -254,10 +245,7 @@ export default function AuthPage() {
                               <Input 
                                 type="email" 
                                 placeholder="seu@email.com"
-                                value={field.value || ""}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
-                                name={field.name}
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -276,10 +264,7 @@ export default function AuthPage() {
                                 <Input 
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Mínimo 6 caracteres"
-                                  value={field.value || ""}
-                                  onChange={field.onChange}
-                                  onBlur={field.onBlur}
-                                  name={field.name}
+                                  {...field}
                                 />
                                 <button
                                   type="button"
