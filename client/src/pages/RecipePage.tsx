@@ -1,122 +1,83 @@
-import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Clock, Users, BarChart3, Share2, Check, Lightbulb } from "lucide-react";
-import { Header } from "@/components/Header";
-import { SEOHead } from "@/components/SEOHead";
+import { useParams, Link } from "wouter";
+import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "wouter";
-import type { Recipe } from "@shared/schema";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function RecipePage() {
   const { slug } = useParams<{ slug: string }>();
   
-  const { data: recipe, isLoading, error } = useQuery<Recipe>({
-    queryKey: ["/api/recipes", slug],
+  const { data: recipe, isLoading, error } = useQuery({
+    queryKey: ["/api/recipes/slug", slug],
     enabled: !!slug,
   });
 
-  const shareRecipe = (platform: string) => {
-    const url = window.location.href;
-    const title = recipe?.title || "Receita Rápida";
-    
-    let shareUrl = "";
-    switch (platform) {
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        break;
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
-        break;
-      case "whatsapp":
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(`${title} - ${url}`)}`;
-        break;
-    }
-    
-    if (shareUrl) {
-      window.open(shareUrl, "_blank", "width=600,height=400");
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <main className="pt-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <Skeleton className="h-8 w-32 mb-6" />
-            <Skeleton className="w-full h-64 md:h-80 rounded-xl mb-6" />
-            <Skeleton className="h-12 mb-4" />
-            <Skeleton className="h-6 mb-6" />
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card>
-                <CardContent className="p-6">
-                  <Skeleton className="h-8 mb-4" />
-                  <div className="space-y-3">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <Skeleton key={i} className="h-4" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <Skeleton className="h-8 mb-4" />
-                  <div className="space-y-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <Skeleton key={i} className="h-6" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-lg">Carregando receita...</div>
       </div>
     );
   }
 
   if (error || !recipe) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <main className="pt-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Receita não encontrada</h1>
-            <p className="text-medium-gray mb-8">A receita que você procura não existe ou foi removida.</p>
-            <Link href="/">
-              <Button className="bg-fresh-green hover:bg-dark-green text-white">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao início
-              </Button>
-            </Link>
-          </div>
-        </main>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Receita não encontrada</h1>
+          <Link href="/">
+            <Button className="bg-fresh-green hover:bg-dark-green text-white">
+              Voltar ao início
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
+  const shareRecipe = (platform: string) => {
+    const url = window.location.href;
+    const title = `Confira esta receita: ${recipe.title}`;
+    
+    switch (platform) {
+      case "facebook":
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank");
+        break;
+      case "twitter":
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, "_blank");
+        break;
+      case "whatsapp":
+        window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`, "_blank");
+        break;
+    }
+  };
+
+  // Ensure arrays are properly handled
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  const instructions = Array.isArray(recipe.instructions) ? recipe.instructions : [];
+  const tips = Array.isArray(recipe.tips) ? recipe.tips : [];
+
   const schemaData = {
     "@context": "https://schema.org/",
     "@type": "Recipe",
-    name: recipe.title,
-    description: recipe.description,
+    name: recipe.title || "",
+    description: recipe.description || "",
     author: {
       "@type": "Organization",
       name: "Receita Rápida"
     },
-    cookTime: `PT${recipe.cookTime}M`,
-    recipeYield: `${recipe.servings} porções`,
+    cookTime: `PT${recipe.cookTime || 30}M`,
+    recipeYield: `${recipe.servings || 4} porções`,
     recipeCategory: "Receita",
     recipeCuisine: "Brasileira",
-    recipeIngredient: recipe.ingredients,
-    recipeInstructions: recipe.instructions.map((instruction, index) => ({
+    recipeIngredient: ingredients,
+    recipeInstructions: instructions.map((instruction: string, index: number) => ({
       "@type": "HowToStep",
       name: `Passo ${index + 1}`,
       text: instruction
     })),
-    image: recipe.imageUrl,
+    image: recipe.imageUrl || "",
     url: window.location.href
   };
 
@@ -130,10 +91,9 @@ export default function RecipePage() {
         type="article"
         schemaData={schemaData}
       />
-      <Header />
-      
-      <main className="pt-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <Link href="/">
             <Button 
@@ -178,14 +138,14 @@ export default function RecipePage() {
             </div>
           </div>
 
-          {/* Social Sharing */}
+          {/* Share Section */}
           <Card className="mb-8">
-            <CardContent className="p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                <Share2 className="h-5 w-5 mr-2 text-fresh-green" />
-                Compartilhe esta receita
-              </h3>
-              <div className="flex space-x-3">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center">
+                  <Share2 className="h-5 w-5 mr-2 text-fresh-green" />
+                  <span className="font-semibold">Compartilhar receita:</span>
+                </div>
                 <Button 
                   onClick={() => shareRecipe("facebook")}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -221,7 +181,7 @@ export default function RecipePage() {
                   Ingredientes
                 </h3>
                 <ul className="space-y-3">
-                  {recipe.ingredients.map((ingredient, index) => (
+                  {ingredients.map((ingredient: string, index: number) => (
                     <li key={index} className="flex items-start">
                       <Check className="h-4 w-4 text-fresh-green mt-1 mr-3 flex-shrink-0" />
                       <span>{ingredient}</span>
@@ -239,7 +199,7 @@ export default function RecipePage() {
                   Modo de Preparo
                 </h3>
                 <ol className="space-y-4">
-                  {recipe.instructions.map((instruction, index) => (
+                  {instructions.map((instruction: string, index: number) => (
                     <li key={index} className="flex items-start">
                       <span className="bg-fresh-green text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-3 mt-0.5 flex-shrink-0">
                         {index + 1}
@@ -253,7 +213,7 @@ export default function RecipePage() {
           </div>
 
           {/* Tips Section */}
-          {recipe.tips && recipe.tips.length > 0 && (
+          {tips.length > 0 && (
             <Card className="mt-8">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
@@ -261,7 +221,7 @@ export default function RecipePage() {
                   Dicas da Receita
                 </h3>
                 <ul className="space-y-2 text-gray-700">
-                  {recipe.tips.map((tip, index) => (
+                  {tips.map((tip: string, index: number) => (
                     <li key={index} className="flex items-start">
                       <span className="text-fresh-green mr-2">•</span>
                       <span>{tip}</span>
