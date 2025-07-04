@@ -92,6 +92,7 @@ This is a modern, automated recipe blog application called "Receita Rápida" (Qu
 
 ## Changelog
 - July 04, 2025. Initial setup
+- July 04, 2025. Changed to GPT-3.5-turbo and DALL-E 2 for cost optimization per user request
 
 ## User Preferences
 

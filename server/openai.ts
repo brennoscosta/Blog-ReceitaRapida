@@ -59,7 +59,7 @@ Requisitos:
 - Foco em receitas saudáveis e práticas`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-3.5-turbo", // Using GPT-3.5-turbo for cost efficiency as requested by user
       messages: [
         {
           role: "system",
@@ -96,11 +96,10 @@ Requisitos:
 export async function generateRecipeImage(recipeTitle: string): Promise<string> {
   try {
     const response = await openai.images.generate({
-      model: "dall-e-3",
+      model: "dall-e-2", // Using DALL-E 2 for cost efficiency as requested by user
       prompt: `Uma foto profissional e apetitosa de "${recipeTitle}", bem iluminada, com ingredientes frescos, estilo culinário brasileiro, fundo neutro, alta qualidade, adequada para blog de receitas`,
       n: 1,
       size: "1024x1024",
-      quality: "standard",
     });
 
     return response.data?.[0]?.url || "";
