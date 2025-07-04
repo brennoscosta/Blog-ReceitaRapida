@@ -147,8 +147,8 @@ export class DatabaseStorage implements IStorage {
           }
           
           // Check if any hashtag matches
-          return recipe.hashtags.some(hashtag => 
-            otherRecipe.hashtags.includes(hashtag)
+          return (recipe.hashtags as string[]).some((hashtag: string) => 
+            (otherRecipe.hashtags as string[]).includes(hashtag)
           );
         });
 

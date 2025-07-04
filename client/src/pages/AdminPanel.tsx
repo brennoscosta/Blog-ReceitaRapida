@@ -3,12 +3,12 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Wand2, Edit, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Wand2, Edit, Trash2, Eye, Settings } from "lucide-react";
 import { Header } from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -16,18 +16,26 @@ import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
-import type { Recipe } from "@shared/schema";
+import type { Recipe, SystemSettings, UpdateSystemSettings } from "@shared/schema";
+import { Switch } from "@/components/ui/switch";
 
 const generateRecipeSchema = z.object({
   recipeIdea: z.string().min(1, "Ideia da receita é obrigatória"),
 });
 
+const systemSettingsSchema = z.object({
+  autoGenerationEnabled: z.boolean(),
+  generationIntervalMinutes: z.number().min(5).max(1440),
+});
+
 type GenerateRecipeData = z.infer<typeof generateRecipeSchema>;
+type SystemSettingsFormData = z.infer<typeof systemSettingsSchema>;
 
 export default function AdminPanel() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [generatedRecipe, setGeneratedRecipe] = useState<any>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const form = useForm<GenerateRecipeData>({
     resolver: zodResolver(generateRecipeSchema),
@@ -36,10 +44,43 @@ export default function AdminPanel() {
     },
   });
 
+  const settingsForm = useForm<SystemSettingsFormData>({
+    resolver: zodResolver(systemSettingsSchema),
+    defaultValues: {
+      autoGenerationEnabled: false,
+      generationIntervalMinutes: 60,
+    },
+  });
+
   const { data: recipes } = useQuery<Recipe[]>({
     queryKey: ["/api/recipes"],
     enabled: isAuthenticated,
   });
+
+  const { data: systemSettings } = useQuery<SystemSettings>({
+    queryKey: ["/api/system/settings"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: autoStats, refetch: refetchStats } = useQuery<{
+    recipesGenerated: number;
+    sessionStartTime: number;
+    nextGenerationTime: number | null;
+  }>({
+    queryKey: ["/api/system/auto-generation/stats"],
+    enabled: isAuthenticated && systemSettings?.autoGenerationEnabled,
+    refetchInterval: 1000, // Update every second for countdown
+  });
+
+  // Update form when settings load
+  useEffect(() => {
+    if (systemSettings) {
+      settingsForm.reset({
+        autoGenerationEnabled: systemSettings.autoGenerationEnabled,
+        generationIntervalMinutes: systemSettings.generationIntervalMinutes,
+      });
+    }
+  }, [systemSettings, settingsForm]);
 
   const generateMutation = useMutation({
     mutationFn: async (data: GenerateRecipeData) => {
@@ -67,6 +108,39 @@ export default function AdminPanel() {
       }
       toast({
         title: "Erro ao gerar receita",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: UpdateSystemSettings) => {
+      const response = await apiRequest("PUT", "/api/system/settings", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Configurações atualizadas!",
+        description: "Sistema de geração automática configurado.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/system/settings"] });
+      refetchStats();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Não autorizado",
+          description: "Você foi desconectado. Fazendo login novamente...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erro ao atualizar configurações",
         description: error.message,
         variant: "destructive",
       });
@@ -155,6 +229,18 @@ export default function AdminPanel() {
 
   const onSubmit = (data: GenerateRecipeData) => {
     generateMutation.mutate(data);
+  };
+
+  const onSettingsSubmit = (data: SystemSettingsFormData) => {
+    updateSettingsMutation.mutate(data);
+  };
+
+  // Format countdown timer
+  const formatCountdown = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const publishRecipe = () => {
@@ -316,6 +402,114 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           )}
+
+          {/* Auto Generation Settings */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800">
+                Geração Automática de Receitas
+              </CardTitle>
+              <p className="text-sm text-medium-gray mt-2">
+                Configure o sistema para gerar receitas automaticamente em intervalos regulares
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Form {...settingsForm}>
+                <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Auto Generation Toggle */}
+                    <FormField
+                      control={settingsForm.control}
+                      name="autoGenerationEnabled"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-base font-medium">Geração Automática</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                              <span className="text-sm text-gray-600">
+                                {field.value ? "Ativada" : "Desativada"}
+                              </span>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Generation Interval */}
+                    <FormField
+                      control={settingsForm.control}
+                      name="generationIntervalMinutes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Intervalo de Geração (minutos)</FormLabel>
+                          <FormControl>
+                            <input
+                              type="number"
+                              min="5"
+                              max="1440"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Mínimo: 5 minutos, Máximo: 1440 minutos (24 horas)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Status and Stats */}
+                  {systemSettings?.autoGenerationEnabled && autoStats && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {autoStats.recipesGenerated}
+                        </div>
+                        <div className="text-sm text-green-700">Receitas Geradas</div>
+                        <div className="text-xs text-green-600">Nesta Sessão</div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {autoStats.nextGenerationTime 
+                            ? formatCountdown(autoStats.nextGenerationTime - Date.now())
+                            : "--:--"
+                          }
+                        </div>
+                        <div className="text-sm text-green-700">Próxima Receita</div>
+                        <div className="text-xs text-green-600">Cronômetro</div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {Math.floor((Date.now() - autoStats.sessionStartTime) / (1000 * 60))}m
+                        </div>
+                        <div className="text-sm text-green-700">Tempo Ativo</div>
+                        <div className="text-xs text-green-600">Desta Sessão</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={updateSettingsMutation.isPending}
+                    className="w-full bg-primary hover:bg-primary/90"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {updateSettingsMutation.isPending ? "Salvando..." : "Salvar Configurações"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
 
           {/* Existing Posts Management */}
           <Card>

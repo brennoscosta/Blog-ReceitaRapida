@@ -3,7 +3,15 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth } from "./auth";
 import { generateRecipe, generateRecipeImage } from "./openai";
-import { insertRecipeSchema, updateRecipeSchema } from "@shared/schema";
+import { insertRecipeSchema, updateRecipeSchema, updateSystemSettingsSchema } from "@shared/schema";
+import { 
+  startAutoGeneration, 
+  stopAutoGeneration, 
+  restartAutoGeneration, 
+  getAutoGenerationStats, 
+  resetAutoGenerationStats,
+  getNextGenerationTime 
+} from "./autoGenerator";
 import { z } from "zod";
 
 function createSlug(title: string): string {
@@ -187,6 +195,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting recipe:", error);
       res.status(500).json({ message: "Failed to delete recipe" });
+    }
+  });
+
+  // System settings routes
+  app.get("/api/system/settings", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching system settings:", error);
+      res.status(500).json({ message: "Failed to fetch system settings" });
+    }
+  });
+
+  app.put("/api/system/settings", requireAuth, async (req, res) => {
+    try {
+      const updateData = updateSystemSettingsSchema.parse(req.body);
+      const updatedSettings = await storage.updateSystemSettings(updateData);
+      
+      // Reiniciar geração automática com novas configurações
+      if (updatedSettings.autoGenerationEnabled) {
+        await restartAutoGeneration();
+      } else {
+        stopAutoGeneration();
+      }
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      console.error("Error updating system settings:", error);
+      res.status(500).json({ message: "Failed to update system settings" });
+    }
+  });
+
+  // Auto-generation control routes
+  app.get("/api/system/auto-generation/stats", requireAuth, async (req, res) => {
+    try {
+      const stats = getAutoGenerationStats();
+      const nextGenerationTime = await getNextGenerationTime();
+      res.json({
+        ...stats,
+        nextGenerationTime,
+      });
+    } catch (error) {
+      console.error("Error fetching auto-generation stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.post("/api/system/auto-generation/reset-stats", requireAuth, async (req, res) => {
+    try {
+      resetAutoGenerationStats();
+      res.json({ message: "Stats reset successfully" });
+    } catch (error) {
+      console.error("Error resetting stats:", error);
+      res.status(500).json({ message: "Failed to reset stats" });
+    }
+  });
+
+  // System settings routes
+  app.get("/api/system/settings", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching system settings:", error);
+      res.status(500).json({ message: "Failed to fetch system settings" });
+    }
+  });
+
+  app.put("/api/system/settings", requireAuth, async (req, res) => {
+    try {
+      const validatedData = updateSystemSettingsSchema.parse(req.body);
+      const settings = await storage.updateSystemSettings(validatedData);
+      
+      // Update auto generation system
+      if (validatedData.autoGenerationEnabled) {
+        await startAutoGeneration();
+      } else {
+        stopAutoGeneration();
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating system settings:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid settings data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update system settings" });
+    }
+  });
+
+  // Auto generation stats route
+  app.get("/api/system/auto-generation/stats", requireAuth, async (req, res) => {
+    try {
+      const stats = getAutoGenerationStats();
+      const nextGenerationTime = await getNextGenerationTime();
+      
+      res.json({
+        ...stats,
+        nextGenerationTime,
+      });
+    } catch (error) {
+      console.error("Error fetching auto generation stats:", error);
+      res.status(500).json({ message: "Failed to fetch auto generation stats" });
+    }
+  });
+
+  // Manual control routes for auto generation
+  app.post("/api/system/auto-generation/start", requireAuth, async (req, res) => {
+    try {
+      await startAutoGeneration();
+      res.json({ message: "Auto generation started" });
+    } catch (error) {
+      console.error("Error starting auto generation:", error);
+      res.status(500).json({ message: "Failed to start auto generation" });
+    }
+  });
+
+  app.post("/api/system/auto-generation/stop", requireAuth, async (req, res) => {
+    try {
+      stopAutoGeneration();
+      res.json({ message: "Auto generation stopped" });
+    } catch (error) {
+      console.error("Error stopping auto generation:", error);
+      res.status(500).json({ message: "Failed to stop auto generation" });
+    }
+  });
+
+  app.post("/api/system/auto-generation/restart", requireAuth, async (req, res) => {
+    try {
+      await restartAutoGeneration();
+      res.json({ message: "Auto generation restarted" });
+    } catch (error) {
+      console.error("Error restarting auto generation:", error);
+      res.status(500).json({ message: "Failed to restart auto generation" });
+    }
+  });
+
+  app.post("/api/system/auto-generation/reset-stats", requireAuth, async (req, res) => {
+    try {
+      resetAutoGenerationStats();
+      res.json({ message: "Auto generation stats reset" });
+    } catch (error) {
+      console.error("Error resetting auto generation stats:", error);
+      res.status(500).json({ message: "Failed to reset auto generation stats" });
     }
   });
 
