@@ -21,7 +21,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   // Recipe operations
-  getRecipes(): Promise<Recipe[]>;
+  getRecipes(category?: string, subcategory?: string): Promise<Recipe[]>;
   getRecipeBySlug(slug: string): Promise<Recipe | undefined>;
   getRecipeById(id: number): Promise<Recipe | undefined>;
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
@@ -31,6 +31,9 @@ export interface IStorage {
   // Search and related recipes
   searchRecipes(query: string): Promise<Recipe[]>;
   getRelatedRecipes(recipe: Recipe): Promise<Recipe[]>;
+  
+  // Categories
+  getCategories(): Promise<{categories: string[], subcategories: {[key: string]: string[]}}>;
   
   // System settings operations
   getSystemSettings(): Promise<SystemSettings>;
@@ -59,11 +62,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Recipe operations
-  async getRecipes(): Promise<Recipe[]> {
+  async getRecipes(category?: string, subcategory?: string): Promise<Recipe[]> {
+    let whereConditions = [eq(recipes.published, true)];
+    
+    if (category) {
+      whereConditions.push(eq(recipes.category, category));
+    }
+    
+    if (subcategory) {
+      whereConditions.push(eq(recipes.subcategory, subcategory));
+    }
+    
     return await db
       .select()
       .from(recipes)
-      .where(eq(recipes.published, true))
+      .where(and(...whereConditions))
       .orderBy(desc(recipes.createdAt));
   }
 
@@ -205,6 +218,35 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings;
+  }
+
+  // Categories
+  async getCategories(): Promise<{categories: string[], subcategories: {[key: string]: string[]}}> {
+    const allRecipes = await db
+      .select({ category: recipes.category, subcategory: recipes.subcategory })
+      .from(recipes)
+      .where(eq(recipes.published, true));
+    
+    const categoriesSet = new Set<string>();
+    const subcategoriesMap: {[key: string]: Set<string>} = {};
+    
+    allRecipes.forEach(recipe => {
+      categoriesSet.add(recipe.category);
+      
+      if (!subcategoriesMap[recipe.category]) {
+        subcategoriesMap[recipe.category] = new Set();
+      }
+      subcategoriesMap[recipe.category].add(recipe.subcategory);
+    });
+    
+    const categories = Array.from(categoriesSet).sort();
+    const subcategories: {[key: string]: string[]} = {};
+    
+    Object.keys(subcategoriesMap).forEach(category => {
+      subcategories[category] = Array.from(subcategoriesMap[category]).sort();
+    });
+    
+    return { categories, subcategories };
   }
 }
 

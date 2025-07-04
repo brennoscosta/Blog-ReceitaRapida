@@ -32,7 +32,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public routes
   app.get("/api/recipes", async (req, res) => {
     try {
-      const recipes = await storage.getRecipes();
+      const { category, subcategory } = req.query;
+      const recipes = await storage.getRecipes(
+        category as string,
+        subcategory as string
+      );
       res.json(recipes);
     } catch (error) {
       console.error("Error fetching recipes:", error);
@@ -52,6 +56,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error searching recipes:", error);
       res.status(500).json({ message: "Failed to search recipes" });
+    }
+  });
+
+  app.get("/api/recipes/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
     }
   });
 

@@ -18,6 +18,8 @@ interface GeneratedRecipe {
   metaDescription: string;
   metaKeywords: string;
   hashtags: string[];
+  category: string;
+  subcategory: string;
 }
 
 export async function generateRecipe(
@@ -43,7 +45,9 @@ Formato JSON obrigatório:
   "metaTitle": "Título SEO otimizado (max 60 chars)",
   "metaDescription": "Meta descrição SEO (max 160 chars)",
   "metaKeywords": "palavra1, palavra2, palavra3",
-  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"]
+  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
+  "category": "Categoria principal (ex: Sobremesas, Pratos Principais, Lanches)",
+  "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)"
 }
 
 Instruções para cookTime e difficulty:
@@ -58,7 +62,8 @@ Outros requisitos:
 - Ingredientes com quantidades específicas
 - Instruções claras e numeradas
 - 3-5 dicas úteis e práticas
-- 5 hashtags relevantes para categorização
+- 10 hashtags relevantes para categorização e busca
+- Categoria e subcategoria bem definidas para filtros
 - SEO otimizado para blogs de culinária
 - Foco em receitas saudáveis e saborosas`;
 
