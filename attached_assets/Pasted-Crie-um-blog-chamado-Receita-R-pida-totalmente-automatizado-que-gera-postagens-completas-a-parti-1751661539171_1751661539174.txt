@@ -1,0 +1,42 @@
+Crie um blog chamado "Receita Rápida", totalmente automatizado, que gera postagens completas a partir de uma pequena frase enviada pelo administrador.
+
+✅ Funcionalidades principais:
+- O administrador digita apenas uma frase curta (por exemplo: "bolo de cenoura saudável").
+- O sistema usa a API do ChatGPT para gerar automaticamente:
+  • Um título otimizado e atrativo.
+  • Uma descrição resumida.
+  • Um conteúdo detalhado e bem formatado, incluindo listas, passos, dicas e curiosidades.
+  • Uma imagem de capa (pode usar IA ou banco de imagens gratuito).
+  • Todas as tags de SEO, incluindo `<meta title>`, `<meta description>`, `<meta keywords>`, e um slug amigável baseado no título.
+- As postagens devem ser otimizadas para motores de busca (SEO-friendly).
+
+✅ Estrutura do blog:
+- Página inicial bonita e moderna, mostrando as últimas postagens em cards, cada um com imagem de capa, título, resumo curto e botão "Leia mais".
+- Menu de navegação fixo no topo com logo "Receita Rápida".
+- Layout responsivo e otimizado para mobile, tablets e computadores.
+- Ao clicar em uma postagem, abrir página individual com conteúdo completo, bem diagramado, com fontes grandes e leitura agradável.
+- Incluir botão de compartilhamento em redes sociais.
+
+✅ Painel administrativo:
+- Área restrita para inserir frases curtas e gerar posts automaticamente.
+- Opção para editar manualmente caso queira ajustar algum detalhe.
+- Opção para excluir ou organizar posts.
+
+✅ Estilo visual:
+- Cores leves e frescas, remetendo à culinária e à leveza (ex: tons de verde claro, branco e cinza suave).
+- Tipografia moderna e clara.
+- Animações suaves ao carregar posts.
+
+✅ Técnicas de SEO:
+- Gerar automaticamente as URLs amigáveis (slugs) com base no título.
+- Inserir schema.org básico para posts.
+- Inserir todas as metas relevantes (Open Graph, Twitter Cards etc.).
+
+✅ Outras exigências:
+- Código limpo, organizado e fácil de manter.
+- Compatível com dispositivos mobile, tablets e desktops.
+- Carregamento rápido e imagens otimizadas.
+- Possibilidade futura de adicionar anúncios (Google AdSense).
+
+Nome oficial: **Receita Rápida**
+
