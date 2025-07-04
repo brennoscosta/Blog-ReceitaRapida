@@ -20,8 +20,6 @@ import type { Recipe } from "@shared/schema";
 
 const generateRecipeSchema = z.object({
   recipeIdea: z.string().min(1, "Ideia da receita é obrigatória"),
-  difficulty: z.string().optional(),
-  cookTime: z.string().optional(),
 });
 
 type GenerateRecipeData = z.infer<typeof generateRecipeSchema>;
@@ -35,8 +33,6 @@ export default function AdminPanel() {
     resolver: zodResolver(generateRecipeSchema),
     defaultValues: {
       recipeIdea: "",
-      difficulty: "facil",
-      cookTime: "",
     },
   });
 
@@ -235,50 +231,28 @@ export default function AdminPanel() {
                     )}
                   />
 
-                  {/* Additional options */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="difficulty"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Dificuldade</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="facil">Fácil</SelectItem>
-                              <SelectItem value="medio">Médio</SelectItem>
-                              <SelectItem value="dificil">Difícil</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="cookTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tempo de Preparo (minutos)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="30"
-                              min="5"
-                              max="300"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {/* Info about automatic generation */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h3 className="text-sm font-medium text-blue-800">
+                          Geração Automática Inteligente
+                        </h3>
+                        <div className="mt-2 text-sm text-blue-700">
+                          <p>A IA calculará automaticamente:</p>
+                          <ul className="list-disc list-inside mt-1 space-y-1">
+                            <li><strong>Tempo de preparo:</strong> baseado na complexidade real da receita</li>
+                            <li><strong>Nível de dificuldade:</strong> determinado pelos ingredientes e técnicas</li>
+                            <li><strong>Hashtags:</strong> 5 tags relevantes para categorização</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Generate Button */}

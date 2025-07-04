@@ -30,9 +30,6 @@ export async function generateRecipe(
 
 IMPORTANTE: Responda APENAS com um JSON válido no formato especificado abaixo, sem texto adicional.
 
-${difficulty ? `Dificuldade desejada: ${difficulty}` : ''}
-${cookTime ? `Tempo de preparo desejado: ${cookTime} minutos` : ''}
-
 Formato JSON obrigatório:
 {
   "title": "Título atrativo da receita",
@@ -41,7 +38,7 @@ Formato JSON obrigatório:
   "instructions": ["passo 1", "passo 2", "..."],
   "tips": ["dica 1", "dica 2", "..."],
   "cookTime": 30,
-  "difficulty": "Fácil|Médio|Difícil",
+  "difficulty": "Fácil",
   "servings": 4,
   "metaTitle": "Título SEO otimizado (max 60 chars)",
   "metaDescription": "Meta descrição SEO (max 160 chars)",
@@ -49,14 +46,21 @@ Formato JSON obrigatório:
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"]
 }
 
-Requisitos:
+Instruções para cookTime e difficulty:
+- CALCULE o cookTime real baseado no tempo total de preparo + cozimento da receita (em minutos)
+- DEFINA a difficulty baseada na complexidade real:
+  * "Fácil": receitas simples, poucos ingredientes, técnicas básicas
+  * "Médio": técnicas intermediárias, vários passos, ingredientes variados  
+  * "Difícil": técnicas avançadas, muitos ingredientes, preparo complexo
+
+Outros requisitos:
 - Receita deve ser autêntica e executável
 - Ingredientes com quantidades específicas
 - Instruções claras e numeradas
-- 3-5 dicas úteis
+- 3-5 dicas úteis e práticas
 - 5 hashtags relevantes para categorização
 - SEO otimizado para blogs de culinária
-- Foco em receitas saudáveis e práticas`;
+- Foco em receitas saudáveis e saborosas`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo", // Using GPT-3.5-turbo for cost efficiency as requested by user

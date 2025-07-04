@@ -1,11 +1,14 @@
 import {
   users,
   recipes,
+  systemSettings,
   type User,
   type InsertUser,
   type Recipe,
   type InsertRecipe,
   type UpdateRecipe,
+  type SystemSettings,
+  type UpdateSystemSettings,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -28,6 +31,10 @@ export interface IStorage {
   // Search and related recipes
   searchRecipes(query: string): Promise<Recipe[]>;
   getRelatedRecipes(recipe: Recipe): Promise<Recipe[]>;
+  
+  // System settings operations
+  getSystemSettings(): Promise<SystemSettings>;
+  updateSystemSettings(settings: UpdateSystemSettings): Promise<SystemSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -165,6 +172,39 @@ export class DatabaseStorage implements IStorage {
       console.error("Error in getRelatedRecipes:", error);
       return [];
     }
+  }
+
+  async getSystemSettings(): Promise<SystemSettings> {
+    const [settings] = await db.select().from(systemSettings).limit(1);
+    
+    if (!settings) {
+      // Create default settings if none exist
+      const [newSettings] = await db
+        .insert(systemSettings)
+        .values({
+          autoGenerationEnabled: false,
+          generationIntervalMinutes: 60,
+        })
+        .returning();
+      return newSettings;
+    }
+    
+    return settings;
+  }
+
+  async updateSystemSettings(settingsData: UpdateSystemSettings): Promise<SystemSettings> {
+    const existingSettings = await this.getSystemSettings();
+    
+    const [updatedSettings] = await db
+      .update(systemSettings)
+      .set({
+        ...settingsData,
+        updatedAt: new Date(),
+      })
+      .where(eq(systemSettings.id, existingSettings.id))
+      .returning();
+    
+    return updatedSettings;
   }
 }
 

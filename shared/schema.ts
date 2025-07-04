@@ -58,6 +58,16 @@ export const recipes = pgTable("recipes", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// System settings table for auto-generation configuration
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  autoGenerationEnabled: boolean("auto_generation_enabled").notNull().default(false),
+  generationIntervalMinutes: integer("generation_interval_minutes").notNull().default(60),
+  lastGenerationAt: timestamp("last_generation_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertRecipeSchema = createInsertSchema(recipes).omit({
   id: true,
   createdAt: true,
@@ -81,9 +91,16 @@ export const loginUserSchema = z.object({
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
 });
 
+export const updateSystemSettingsSchema = z.object({
+  autoGenerationEnabled: z.boolean(),
+  generationIntervalMinutes: z.number().min(5, "Intervalo mínimo é 5 minutos").max(1440, "Intervalo máximo é 24 horas"),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type LoginUser = z.infer<typeof loginUserSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
 export type UpdateRecipe = z.infer<typeof updateRecipeSchema>;
+export type SystemSettings = typeof systemSettings.$inferSelect;
+export type UpdateSystemSettings = z.infer<typeof updateSystemSettingsSchema>;
