@@ -9,7 +9,16 @@ export default function RecipePage() {
   const { slug } = useParams<{ slug: string }>();
   
   const { data: recipe, isLoading, error } = useQuery({
-    queryKey: ["/api/recipes/slug", slug],
+    queryKey: ["/api/recipes", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/recipes/${slug}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    },
     enabled: !!slug,
   });
 

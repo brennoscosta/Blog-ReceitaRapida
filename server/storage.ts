@@ -8,7 +8,7 @@ import {
   type UpdateRecipe,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -60,7 +60,7 @@ export class DatabaseStorage implements IStorage {
     const [recipe] = await db
       .select()
       .from(recipes)
-      .where(eq(recipes.slug, slug));
+      .where(and(eq(recipes.slug, slug), eq(recipes.published, true)));
     return recipe;
   }
 
