@@ -115,44 +115,56 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRelatedRecipes(recipe: Recipe): Promise<Recipe[]> {
-    const hashtags = Array.isArray(recipe.hashtags) ? recipe.hashtags : [];
-    
-    if (hashtags.length === 0) {
-      // If no hashtags, return recipes with same difficulty
-      const relatedRecipes = await db
+    try {
+      // Get all other published recipes and filter by hashtags in JavaScript
+      const allRecipes = await db
         .select()
         .from(recipes)
         .where(
           and(
             eq(recipes.published, true),
-            eq(recipes.difficulty, recipe.difficulty),
             sql`${recipes.id} != ${recipe.id}`
           )
         )
-        .orderBy(desc(recipes.createdAt))
-        .limit(6);
-      
-      return relatedRecipes;
+        .orderBy(desc(recipes.createdAt));
+
+      if (allRecipes.length === 0) {
+        return [];
+      }
+
+      // If current recipe has hashtags, find recipes with similar hashtags
+      if (recipe.hashtags && Array.isArray(recipe.hashtags) && recipe.hashtags.length > 0) {
+        const relatedByHashtags = allRecipes.filter(otherRecipe => {
+          if (!otherRecipe.hashtags || !Array.isArray(otherRecipe.hashtags)) {
+            return false;
+          }
+          
+          // Check if any hashtag matches
+          return recipe.hashtags.some(hashtag => 
+            otherRecipe.hashtags.includes(hashtag)
+          );
+        });
+
+        if (relatedByHashtags.length > 0) {
+          return relatedByHashtags.slice(0, 6);
+        }
+      }
+
+      // Fallback: return recipes with same difficulty
+      const relatedByDifficulty = allRecipes.filter(otherRecipe => 
+        otherRecipe.difficulty === recipe.difficulty
+      );
+
+      if (relatedByDifficulty.length > 0) {
+        return relatedByDifficulty.slice(0, 6);
+      }
+
+      // Final fallback: return any other published recipes
+      return allRecipes.slice(0, 6);
+    } catch (error) {
+      console.error("Error in getRelatedRecipes:", error);
+      return [];
     }
-
-    // Find recipes with similar hashtags
-    const relatedRecipes = await db
-      .select()
-      .from(recipes)
-      .where(
-        and(
-          eq(recipes.published, true),
-          sql`${recipes.id} != ${recipe.id}`,
-          sql`EXISTS (
-            SELECT 1 FROM jsonb_array_elements_text(${recipes.hashtags}) AS hashtag
-            WHERE hashtag = ANY(${hashtags})
-          )`
-        )
-      )
-      .orderBy(desc(recipes.createdAt))
-      .limit(6);
-
-    return relatedRecipes;
   }
 }
 

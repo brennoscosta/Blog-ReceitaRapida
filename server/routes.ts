@@ -56,7 +56,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Recipe not found" });
       }
       
-      const relatedRecipes = await storage.getRelatedRecipes(recipe);
+      // Simple approach: return other published recipes 
+      const allRecipes = await storage.getRecipes();
+      const relatedRecipes = allRecipes
+        .filter(r => r.id !== recipe.id && r.published)
+        .slice(0, 6);
+      
       res.json(relatedRecipes);
     } catch (error) {
       console.error("Error fetching related recipes:", error);

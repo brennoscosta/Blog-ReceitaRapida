@@ -103,7 +103,7 @@ export async function generateRecipeImage(recipeTitle: string): Promise<string> 
       quality: "standard",
     });
 
-    return response.data[0].url || "";
+    return response.data?.[0]?.url || "";
   } catch (error) {
     console.error("Error generating recipe image:", error);
     // Return a placeholder image URL if generation fails
