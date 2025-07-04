@@ -18,6 +18,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import type { Recipe, SystemSettings, UpdateSystemSettings } from "@shared/schema";
 import { Switch } from "@/components/ui/switch";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const generateRecipeSchema = z.object({
   recipeIdea: z.string().min(1, "Ideia da receita é obrigatória"),
@@ -402,6 +403,28 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           )}
+
+          {/* Image Upload Test Section */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800">
+                Teste de Upload de Imagem
+              </CardTitle>
+              <p className="text-sm text-medium-gray mt-2">
+                Teste o sistema de upload e compressão de imagens para Amazon S3
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ImageUpload 
+                onImageUploaded={(imageUrl) => {
+                  toast({
+                    title: "Upload realizado!",
+                    description: `Imagem salva em: ${imageUrl}`,
+                  });
+                }}
+              />
+            </CardContent>
+          </Card>
 
           {/* Auto Generation Settings */}
           <Card className="mb-8">

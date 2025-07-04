@@ -1,5 +1,6 @@
 import { storage } from "./storage";
-import { generateRecipe, generateRecipeImage } from "./openai";
+import { generateRecipe } from "./openai";
+import { S3ImageService } from "./s3Service";
 
 // Lista de ideias de receitas aleatórias para geração automática
 const recipeIdeas = [
@@ -71,8 +72,8 @@ async function generateRandomRecipe(): Promise<void> {
     // Gerar receita com IA
     const generatedRecipe = await generateRecipe(randomIdea);
     
-    // Gerar imagem
-    const imageUrl = await generateRecipeImage(generatedRecipe.title);
+    // Gerar e fazer upload da imagem para S3
+    const imageUrl = await S3ImageService.generateAndUploadRecipeImage(generatedRecipe.title);
     
     // Criar slug único
     let slug = createSlug(generatedRecipe.title);

@@ -45,7 +45,7 @@ export function RecipeCard({ recipe, onHashtagClick, onCategoryClick }: RecipeCa
           {recipe.title}
         </h4>
         <p className="text-medium-gray mb-4 text-sm line-clamp-3">
-          {String(recipe.description)}
+          {recipe.description || ''}
         </p>
 
         {/* Hashtags */}
