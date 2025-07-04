@@ -51,8 +51,8 @@ export default function Home() {
   };
 
   const handleCategoryClick = (category: string, subcategory?: string) => {
-    setSelectedCategory(category);
-    setSelectedSubcategory(subcategory || "");
+    setSelectedCategory(category === "all" ? "" : category);
+    setSelectedSubcategory(subcategory === "all" ? "" : (subcategory || ""));
     setSelectedHashtag(""); // Clear hashtag filter when filtering by category
     scrollToRecipes();
   };
@@ -113,12 +113,15 @@ export default function Home() {
                 {/* Category Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <Select 
+                    value={selectedCategory || "all"} 
+                    onValueChange={(value) => setSelectedCategory(value === "all" ? "" : value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Todas as categorias" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas as categorias</SelectItem>
+                      <SelectItem value="all">Todas as categorias</SelectItem>
                       {categories?.categories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
@@ -132,15 +135,15 @@ export default function Home() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subcategoria</label>
                   <Select 
-                    value={selectedSubcategory} 
-                    onValueChange={setSelectedSubcategory}
+                    value={selectedSubcategory || "all"} 
+                    onValueChange={(value) => setSelectedSubcategory(value === "all" ? "" : value)}
                     disabled={!selectedCategory}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Todas as subcategorias" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas as subcategorias</SelectItem>
+                      <SelectItem value="all">Todas as subcategorias</SelectItem>
                       {selectedCategory && categories?.subcategories[selectedCategory]?.map((subcategory) => (
                         <SelectItem key={subcategory} value={subcategory}>
                           {subcategory}
