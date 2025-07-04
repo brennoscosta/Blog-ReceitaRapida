@@ -1,9 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
+import { RecipeCard } from "@/components/RecipeCard";
 import { SEOHead } from "@/components/SEOHead";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
+import type { Recipe } from "@shared/schema";
 
 export default function Landing() {
+  const { data: recipes, isLoading } = useQuery<Recipe[]>({
+    queryKey: ["/api/recipes"],
+  });
+
   const scrollToRecipes = () => {
     const recipesSection = document.getElementById('recipes');
     if (recipesSection) {
@@ -35,24 +43,52 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Welcome Section */}
+        {/* Latest Recipes */}
         <div id="recipes" className="py-16 bg-light-gray">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 className="text-3xl font-bold text-gray-800 mb-6">
-              Bem-vindo ao Receita Rápida
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">
+              Últimas Receitas
             </h3>
-            <p className="text-lg text-medium-gray mb-8 max-w-2xl mx-auto">
-              Nosso blog automatizado cria receitas deliciosas e saudáveis usando inteligência artificial. 
-              Faça login como administrador para começar a gerar conteúdo automaticamente.
-            </p>
-            <Link href="/auth">
-              <Button 
-                size="lg"
-                className="bg-fresh-green hover:bg-dark-green text-white"
-              >
-                Fazer Login
-              </Button>
-            </Link>
+            
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <Skeleton className="w-full h-48" />
+                    <div className="p-6">
+                      <Skeleton className="h-6 mb-3" />
+                      <Skeleton className="h-4 mb-4" />
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-8 w-20" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recipes && recipes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {recipes.map((recipe) => (
+                  <RecipeCard key={recipe.id} recipe={recipe} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-lg text-medium-gray mb-4">
+                  Nenhuma receita encontrada ainda.
+                </p>
+                <p className="text-sm text-medium-gray mb-6">
+                  Nosso blog automatizado cria receitas deliciosas usando inteligência artificial.
+                </p>
+                <Link href="/auth">
+                  <Button 
+                    className="bg-fresh-green hover:bg-dark-green text-white"
+                  >
+                    Acesso Administrativo
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </main>
