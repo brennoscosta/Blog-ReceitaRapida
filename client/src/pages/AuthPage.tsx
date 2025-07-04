@@ -110,7 +110,6 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-fresh-green to-dark-green">
       <SEOHead title="Login - Receita Rápida" />
-      
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
         <div className="grid lg:grid-cols-2 gap-8 w-full max-w-6xl">
           {/* Left side - Hero section */}
@@ -124,7 +123,7 @@ export default function AuthPage() {
               Blog Automatizado de Receitas
             </h2>
             
-            <p className="text-xl text-green-100 leading-relaxed">
+            <p className="text-xl leading-relaxed text-[#1c8707]">
               Crie receitas completas automaticamente usando inteligência artificial. 
               Basta digitar uma frase simples e nossa IA gera todo o conteúdo: 
               ingredientes, modo de preparo, dicas e otimização SEO.
@@ -172,7 +171,10 @@ export default function AuthPage() {
                               <Input 
                                 type="email" 
                                 placeholder="seu@email.com"
-                                {...field} 
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
                               />
                             </FormControl>
                             <FormMessage />
@@ -191,7 +193,10 @@ export default function AuthPage() {
                                 <Input 
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Sua senha"
-                                  {...field} 
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  name={field.name}
                                 />
                                 <button
                                   type="button"
@@ -228,7 +233,10 @@ export default function AuthPage() {
                             <FormControl>
                               <Input 
                                 placeholder="Seu nome"
-                                {...field} 
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
                               />
                             </FormControl>
                             <FormMessage />
@@ -246,7 +254,10 @@ export default function AuthPage() {
                               <Input 
                                 type="email" 
                                 placeholder="seu@email.com"
-                                {...field} 
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
                               />
                             </FormControl>
                             <FormMessage />
@@ -265,7 +276,10 @@ export default function AuthPage() {
                                 <Input 
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Mínimo 6 caracteres"
-                                  {...field} 
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  name={field.name}
                                 />
                                 <button
                                   type="button"
