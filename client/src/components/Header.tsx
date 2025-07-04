@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, ChefHat } from "lucide-react";
+import { Menu, X, ChefHat, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [location] = useLocation();
   const { isAuthenticated } = useAuth();
 
@@ -16,6 +18,13 @@ export function Header() {
 
   const isActive = (path: string) => {
     return location === path;
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/busca?q=${encodeURIComponent(searchQuery.trim())}`;
+    }
   };
 
   return (
@@ -30,6 +39,28 @@ export function Header() {
             </h1>
           </Link>
           
+          {/* Search Bar */}
+          <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+            <form onSubmit={handleSearch} className="flex w-full">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar receitas..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-l-md focus:ring-fresh-green focus:border-fresh-green"
+                />
+              </div>
+              <Button 
+                type="submit"
+                className="bg-fresh-green hover:bg-dark-green text-white px-4 py-2 rounded-r-md rounded-l-none"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 

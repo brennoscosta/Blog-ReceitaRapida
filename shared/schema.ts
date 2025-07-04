@@ -52,6 +52,7 @@ export const recipes = pgTable("recipes", {
   metaTitle: varchar("meta_title", { length: 255 }),
   metaDescription: text("meta_description"),
   metaKeywords: text("meta_keywords"),
+  hashtags: jsonb("hashtags"),
   published: boolean("published").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

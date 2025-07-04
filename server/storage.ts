@@ -8,7 +8,7 @@ import {
   type UpdateRecipe,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -24,6 +24,10 @@ export interface IStorage {
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
   updateRecipe(id: number, recipe: UpdateRecipe): Promise<Recipe>;
   deleteRecipe(id: number): Promise<void>;
+  
+  // Search and related recipes
+  searchRecipes(query: string): Promise<Recipe[]>;
+  getRelatedRecipes(recipe: Recipe): Promise<Recipe[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -91,6 +95,64 @@ export class DatabaseStorage implements IStorage {
 
   async deleteRecipe(id: number): Promise<void> {
     await db.delete(recipes).where(eq(recipes.id, id));
+  }
+
+  // Search and related recipes
+  async searchRecipes(query: string): Promise<Recipe[]> {
+    const searchResults = await db
+      .select()
+      .from(recipes)
+      .where(
+        and(
+          eq(recipes.published, true),
+          sql`(${recipes.title} ILIKE ${'%' + query + '%'} OR ${recipes.description} ILIKE ${'%' + query + '%'})`
+        )
+      )
+      .orderBy(desc(recipes.createdAt))
+      .limit(20);
+    
+    return searchResults;
+  }
+
+  async getRelatedRecipes(recipe: Recipe): Promise<Recipe[]> {
+    const hashtags = Array.isArray(recipe.hashtags) ? recipe.hashtags : [];
+    
+    if (hashtags.length === 0) {
+      // If no hashtags, return recipes with same difficulty
+      const relatedRecipes = await db
+        .select()
+        .from(recipes)
+        .where(
+          and(
+            eq(recipes.published, true),
+            eq(recipes.difficulty, recipe.difficulty),
+            sql`${recipes.id} != ${recipe.id}`
+          )
+        )
+        .orderBy(desc(recipes.createdAt))
+        .limit(6);
+      
+      return relatedRecipes;
+    }
+
+    // Find recipes with similar hashtags
+    const relatedRecipes = await db
+      .select()
+      .from(recipes)
+      .where(
+        and(
+          eq(recipes.published, true),
+          sql`${recipes.id} != ${recipe.id}`,
+          sql`EXISTS (
+            SELECT 1 FROM jsonb_array_elements_text(${recipes.hashtags}) AS hashtag
+            WHERE hashtag = ANY(${hashtags})
+          )`
+        )
+      )
+      .orderBy(desc(recipes.createdAt))
+      .limit(6);
+
+    return relatedRecipes;
   }
 }
 

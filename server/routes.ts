@@ -32,6 +32,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/recipes/search", async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const recipes = await storage.searchRecipes(q);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error searching recipes:", error);
+      res.status(500).json({ message: "Failed to search recipes" });
+    }
+  });
+
+  app.get("/api/recipes/:slug/related", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const recipe = await storage.getRecipeBySlug(slug);
+      
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      const relatedRecipes = await storage.getRelatedRecipes(recipe);
+      res.json(relatedRecipes);
+    } catch (error) {
+      console.error("Error fetching related recipes:", error);
+      res.status(500).json({ message: "Failed to fetch related recipes" });
+    }
+  });
+
   app.get("/api/recipes/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
@@ -85,6 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metaTitle: generatedRecipe.metaTitle,
         metaDescription: generatedRecipe.metaDescription,
         metaKeywords: generatedRecipe.metaKeywords,
+        hashtags: generatedRecipe.hashtags,
         published: false, // Preview mode
       };
 

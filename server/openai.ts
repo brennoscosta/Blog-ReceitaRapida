@@ -17,6 +17,7 @@ interface GeneratedRecipe {
   metaTitle: string;
   metaDescription: string;
   metaKeywords: string;
+  hashtags: string[];
 }
 
 export async function generateRecipe(
@@ -44,7 +45,8 @@ Formato JSON obrigatório:
   "servings": 4,
   "metaTitle": "Título SEO otimizado (max 60 chars)",
   "metaDescription": "Meta descrição SEO (max 160 chars)",
-  "metaKeywords": "palavra1, palavra2, palavra3"
+  "metaKeywords": "palavra1, palavra2, palavra3",
+  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"]
 }
 
 Requisitos:
@@ -52,6 +54,7 @@ Requisitos:
 - Ingredientes com quantidades específicas
 - Instruções claras e numeradas
 - 3-5 dicas úteis
+- 5 hashtags relevantes para categorização
 - SEO otimizado para blogs de culinária
 - Foco em receitas saudáveis e práticas`;
 
