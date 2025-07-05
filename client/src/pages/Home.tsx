@@ -80,7 +80,6 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <SEOHead />
       <Header />
-      
       <main className="pt-16">
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-fresh-green to-dark-green text-white py-20">
@@ -88,7 +87,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-6xl font-bold mb-6">
               Receitas Rápidas & Deliciosas
             </h2>
-            <p className="text-xl md:text-2xl mb-8 text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-[#0dba48]">
               Descubra pratos saudáveis e saborosos criados automaticamente para facilitar seu dia a dia na cozinha
             </p>
             <Button 
@@ -219,7 +218,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
