@@ -82,18 +82,53 @@ export default function Home() {
       <Header />
       <main className="pt-16">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-fresh-green to-dark-green text-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+        <div className="relative text-white py-20 bg-gradient-to-br from-fresh-green via-emerald-500 to-dark-green overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="fill-white">
+              <g fillOpacity="0.3">
+                <circle cx="15" cy="15" r="2"/>
+                <circle cx="45" cy="15" r="2"/>
+                <circle cx="30" cy="30" r="2"/>
+                <circle cx="15" cy="45" r="2"/>
+                <circle cx="45" cy="45" r="2"/>
+              </g>
+            </svg>
+          </div>
+          
+          {/* Floating Elements */}
+          <div className="absolute top-10 left-10 opacity-20 animate-pulse">
+            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center">
+              <span className="text-2xl">🥗</span>
+            </div>
+          </div>
+          <div className="absolute top-20 right-20 opacity-15 animate-pulse delay-1000">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+              <span className="text-xl">🍳</span>
+            </div>
+          </div>
+          <div className="absolute bottom-20 left-20 opacity-10 animate-pulse delay-500">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+              <span className="text-lg">🥄</span>
+            </div>
+          </div>
+          <div className="absolute bottom-32 right-16 opacity-20 animate-pulse delay-1500">
+            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center">
+              <span className="text-lg">🌿</span>
+            </div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
               Receitas Rápidas & Deliciosas
             </h2>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-[#0dba48]">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white drop-shadow-md">
               Descubra pratos saudáveis e saborosos criados automaticamente para facilitar seu dia a dia na cozinha
             </p>
             <Button 
               onClick={scrollToRecipes}
               size="lg"
-              className="bg-warm-orange hover:bg-orange-600 text-white px-8 py-4 text-lg font-semibold"
+              className="bg-warm-orange hover:bg-orange-600 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               Explorar Receitas
             </Button>

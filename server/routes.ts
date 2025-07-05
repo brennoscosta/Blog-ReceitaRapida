@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Função para mapear receita para categoria e obter link similar
-      function getSimilarRecipeLink(recipeTitle: string, category?: string): { title: string; url: string } {
+      const getSimilarRecipeLink = (recipeTitle: string, category?: string): { title: string; url: string } => {
         const title = recipeTitle.toLowerCase();
         
         // Mapear título para categoria baseado em palavras-chave
@@ -436,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Obter receita aleatória da categoria
         const recipes = realRecipeUrls[targetCategory] || realRecipeUrls['sobremesa'];
         return recipes[Math.floor(Math.random() * recipes.length)];
-      }
+      };
 
       // Buscar receitas sem links externos
       const allRecipes = await storage.getRecipes();
@@ -474,6 +474,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fixing missing external links:", error);
       res.status(500).json({ message: "Failed to fix missing external links" });
+    }
+  });
+
+  // Rota para gerar imagem de background do hero
+  app.post("/api/generate-hero-background", requireAuth, async (req, res) => {
+    try {
+      console.log("🎨 Gerando imagem de background para hero section...");
+      
+      // Gerar imagem com OpenAI
+      const imageUrl = await generateRecipeImage("Beautiful kitchen background with fresh vegetables, herbs, and cooking utensils, soft natural lighting, clean modern kitchen, food photography style");
+      
+      console.log("✅ Imagem de background gerada e salva no S3:", imageUrl);
+      
+      res.json({ 
+        imageUrl,
+        message: "Hero background image generated successfully"
+      });
+    } catch (error) {
+      console.error("Error generating hero background:", error);
+      res.status(500).json({ message: "Failed to generate hero background" });
     }
   });
 
