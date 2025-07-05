@@ -1,6 +1,5 @@
 import { storage } from "./storage";
-import { generateRecipe } from "./openai";
-import { S3ImageService } from "./s3Service";
+import { generateRecipe, generateRecipeImage } from "./openai";
 
 // Lista de ideias de receitas aleatórias para geração automática
 const recipeIdeas = [
@@ -72,8 +71,8 @@ async function generateRandomRecipe(): Promise<void> {
     // Gerar receita com IA
     const generatedRecipe = await generateRecipe(randomIdea);
     
-    // Gerar e fazer upload da imagem para S3
-    const imageUrl = await S3ImageService.generateAndUploadRecipeImage(generatedRecipe.title);
+    // Gerar imagem
+    const imageUrl = await generateRecipeImage(generatedRecipe.title);
     
     // Criar slug único
     let slug = createSlug(generatedRecipe.title);
@@ -130,22 +129,8 @@ ${generatedRecipe.tips.map(tip => `- ${tip}`).join('\n')}`;
     
     console.log(`✅ Auto-generated recipe: "${generatedRecipe.title}" (${autoGenerationStats.recipesGenerated} total this session)`);
     
-  } catch (error: any) {
-    if (error.message?.includes("QUOTA_EXCEEDED")) {
-      console.log("⏸️ Quota OpenAI esgotada. Pausando geração automática até renovação da quota.");
-      
-      // Pausar geração automática
-      await storage.updateSystemSettings({ 
-        autoGenerationEnabled: false 
-      } as any);
-      
-      // Parar o sistema de geração automática
-      stopAutoGeneration();
-      
-      console.log("🔴 Sistema de geração automática pausado devido à quota esgotada");
-    } else {
-      console.error("❌ Error generating automatic recipe:", error);
-    }
+  } catch (error) {
+    console.error("❌ Error generating automatic recipe:", error);
   }
 }
 

@@ -12,8 +12,6 @@ import {
   resetAutoGenerationStats,
   getNextGenerationTime 
 } from "./autoGenerator";
-import { S3ImageService } from "./s3Service";
-import multer from "multer";
 import { z } from "zod";
 
 function createSlug(title: string): string {
@@ -26,22 +24,6 @@ function createSlug(title: string): string {
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .replace(/-+/g, "-"); // Remove duplicate hyphens
 }
-
-// Configuração do multer para upload de imagens
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Apenas imagens JPEG, PNG e WebP são permitidas'));
-    }
-  }
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -375,33 +357,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resetting auto generation stats:", error);
       res.status(500).json({ message: "Failed to reset auto generation stats" });
-    }
-  });
-
-  // Upload de imagem para S3
-  app.post("/api/admin/upload-image", requireAuth, upload.single('image'), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "Nenhuma imagem foi enviada" });
-      }
-
-      const imageUrl = await S3ImageService.uploadImage(
-        req.file.buffer,
-        req.file.originalname,
-        {
-          width: 1024,
-          height: 768,
-          quality: 90
-        }
-      );
-
-      res.status(200).json({ 
-        message: "Imagem enviada com sucesso",
-        imageUrl 
-      });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      res.status(500).json({ error: "Erro ao fazer upload da imagem" });
     }
   });
 

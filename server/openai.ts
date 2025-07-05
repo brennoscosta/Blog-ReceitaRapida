@@ -5,8 +5,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
 
-
-
 interface GeneratedRecipe {
   title: string;
   description: string;
@@ -48,8 +46,8 @@ Formato JSON obrigatório:
   "metaDescription": "Meta descrição SEO (max 160 chars)",
   "metaKeywords": "palavra1, palavra2, palavra3",
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
-  "category": "Categoria específica (ex: Massas, Peixes, Mariscos, Carnes, Sobremesas, Bebidas, Saladas)",
-  "subcategory": "Subcategoria detalhada (ex: Pizza, Macarrão, Camarão, Peixe, Bolos, Tortas, Sucos)"
+  "category": "Categoria principal (ex: Sobremesas, Pratos Principais, Lanches)",
+  "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)"
 }
 
 Instruções para cookTime e difficulty:
@@ -98,14 +96,8 @@ Outros requisitos:
     }
 
     return generatedRecipe;
-  } catch (error: any) {
-    console.error("Error generating recipe with OpenAI:", error);
-    
-    // Se for erro de quota ou rate limit, falhar sem fallback
-    if (error.status === 429 || error.code === 'insufficient_quota' || error.code === 'rate_limit_exceeded') {
-      throw new Error("QUOTA_EXCEEDED: OpenAI quota esgotada. Aguarde a renovação da quota para continuar gerando receitas.");
-    }
-    
+  } catch (error) {
+    console.error("Error generating recipe:", error);
     throw new Error("Failed to generate recipe: " + (error instanceof Error ? error.message : "Unknown error"));
   }
 }

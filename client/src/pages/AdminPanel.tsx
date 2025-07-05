@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Wand2, Edit, Trash2, Eye, Settings, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Wand2, Edit, Trash2, Eye, Settings } from "lucide-react";
 import { Header } from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import type { Recipe, SystemSettings, UpdateSystemSettings } from "@shared/schema";
 import { Switch } from "@/components/ui/switch";
-import { ImageUpload } from "@/components/ImageUpload";
 
 const generateRecipeSchema = z.object({
   recipeIdea: z.string().min(1, "Ideia da receita é obrigatória"),
@@ -404,28 +403,6 @@ export default function AdminPanel() {
             </Card>
           )}
 
-          {/* Image Upload Test Section */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800">
-                Teste de Upload de Imagem
-              </CardTitle>
-              <p className="text-sm text-medium-gray mt-2">
-                Teste o sistema de upload e compressão de imagens para Amazon S3
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload 
-                onImageUploaded={(imageUrl) => {
-                  toast({
-                    title: "Upload realizado!",
-                    description: `Imagem salva em: ${imageUrl}`,
-                  });
-                }}
-              />
-            </CardContent>
-          </Card>
-
           {/* Auto Generation Settings */}
           <Card className="mb-8">
             <CardHeader>
@@ -517,33 +494,6 @@ export default function AdminPanel() {
                         </div>
                         <div className="text-sm text-green-700">Tempo Ativo</div>
                         <div className="text-xs text-green-600">Desta Sessão</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Aviso de Quota OpenAI quando sistema está desabilitado */}
-                  {!systemSettings?.autoGenerationEnabled && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                        <div className="text-sm">
-                          <div className="font-semibold text-red-800 mb-2">
-                            🔴 Sistema Pausado - Quota OpenAI Esgotada
-                          </div>
-                          <div className="text-red-700 mb-3">
-                            Para reativar a geração automática:
-                          </div>
-                          <ol className="list-decimal list-inside text-red-700 space-y-1 mb-3">
-                            <li><strong>Acesse</strong> platform.openai.com → Billing</li>
-                            <li><strong>Configure billing prepaid</strong> (mínimo $5)</li>
-                            <li><strong>Aguarde 15 minutos</strong> para ativação</li>
-                            <li><strong>Crie nova API key</strong> após billing ativo</li>
-                            <li><strong>Substitua a key</strong> no Replit Secrets</li>
-                          </ol>
-                          <div className="text-xs text-red-600 bg-red-100 border border-red-300 rounded p-2">
-                            💡 <strong>Dica importante:</strong> API keys criadas antes do billing permanecem limitadas. Sempre crie nova key após configurar billing.
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
