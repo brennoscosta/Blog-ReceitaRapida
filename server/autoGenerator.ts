@@ -71,8 +71,13 @@ async function generateRandomRecipe(): Promise<void> {
     // Gerar receita com IA
     const generatedRecipe = await generateRecipe(randomIdea);
     
-    // Gerar imagem
-    const imageUrl = await generateRecipeImage(generatedRecipe.title);
+    // Tentar gerar imagem, continuar sem imagem se falhar
+    let imageUrl = null;
+    try {
+      imageUrl = await generateRecipeImage(generatedRecipe.title);
+    } catch (error) {
+      console.log("⚠️ Falha na geração de imagem automática, continuando sem imagem:", error instanceof Error ? error.message : "Erro desconhecido");
+    }
     
     // Criar slug único
     let slug = createSlug(generatedRecipe.title);

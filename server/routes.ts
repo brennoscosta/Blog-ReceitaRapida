@@ -130,8 +130,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cookTime ? parseInt(cookTime) : undefined
       );
 
-      // Generate image URL
-      const imageUrl = await generateRecipeImage(generatedRecipe.title);
+      // Try to generate image URL, fallback to null if fails
+      let imageUrl = null;
+      try {
+        imageUrl = await generateRecipeImage(generatedRecipe.title);
+      } catch (error) {
+        console.log("⚠️ Image generation failed, continuing without image:", error instanceof Error ? error.message : "Unknown error");
+      }
 
       // Create complete recipe object
       const slug = createSlug(generatedRecipe.title);
