@@ -21,6 +21,10 @@ import { Switch } from "@/components/ui/switch";
 
 const generateRecipeSchema = z.object({
   recipeIdea: z.string().min(1, "Ideia da receita é obrigatória"),
+  difficulty: z.string().optional(),
+  cookTime: z.number().optional(),
+  category: z.string().min(1, "Categoria é obrigatória"),
+  subcategory: z.string().min(1, "Subcategoria é obrigatória"),
 });
 
 const systemSettingsSchema = z.object({
@@ -41,6 +45,10 @@ export default function AdminPanel() {
     resolver: zodResolver(generateRecipeSchema),
     defaultValues: {
       recipeIdea: "",
+      difficulty: "Médio",
+      cookTime: 30,
+      category: "Pratos Principais",
+      subcategory: "Diversos",
     },
   });
 
@@ -316,6 +324,110 @@ export default function AdminPanel() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Category fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoria</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a categoria" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Pratos Principais">Pratos Principais</SelectItem>
+                              <SelectItem value="Sobremesas">Sobremesas</SelectItem>
+                              <SelectItem value="Lanches">Lanches</SelectItem>
+                              <SelectItem value="Bebidas">Bebidas</SelectItem>
+                              <SelectItem value="Saladas">Saladas</SelectItem>
+                              <SelectItem value="Aperitivos">Aperitivos</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="subcategory"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Subcategoria</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a subcategoria" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Diversos">Diversos</SelectItem>
+                              <SelectItem value="Carnes">Carnes</SelectItem>
+                              <SelectItem value="Peixes">Peixes</SelectItem>
+                              <SelectItem value="Vegetarianos">Vegetarianos</SelectItem>
+                              <SelectItem value="Bolos">Bolos</SelectItem>
+                              <SelectItem value="Tortas">Tortas</SelectItem>
+                              <SelectItem value="Doces">Doces</SelectItem>
+                              <SelectItem value="Salgados">Salgados</SelectItem>
+                              <SelectItem value="Sanduíches">Sanduíches</SelectItem>
+                              <SelectItem value="Sucos">Sucos</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Difficulty and Cook Time fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="difficulty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nível de Dificuldade (Opcional)</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a dificuldade" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Fácil">Fácil</SelectItem>
+                              <SelectItem value="Médio">Médio</SelectItem>
+                              <SelectItem value="Difícil">Difícil</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cookTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tempo de Preparo (minutos) - Opcional</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="30"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   {/* Info about automatic generation */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

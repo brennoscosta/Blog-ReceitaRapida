@@ -110,10 +110,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected admin routes
   app.post("/api/recipes/generate", requireAuth, async (req, res) => {
     try {
-      const { recipeIdea, difficulty, cookTime } = req.body;
+      const { recipeIdea, difficulty, cookTime, category, subcategory } = req.body;
       
       if (!recipeIdea || typeof recipeIdea !== "string") {
         return res.status(400).json({ message: "Recipe idea is required" });
+      }
+
+      if (!category || typeof category !== "string") {
+        return res.status(400).json({ message: "Category is required" });
+      }
+
+      if (!subcategory || typeof subcategory !== "string") {
+        return res.status(400).json({ message: "Subcategory is required" });
       }
 
       const generatedRecipe = await generateRecipe(
@@ -145,6 +153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metaDescription: generatedRecipe.metaDescription,
         metaKeywords: generatedRecipe.metaKeywords,
         hashtags: generatedRecipe.hashtags,
+        category: category,
+        subcategory: subcategory,
         published: false, // Preview mode
       };
 
