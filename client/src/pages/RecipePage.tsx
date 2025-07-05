@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2, Tag, Folder } from "lucide-react";
+import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2, Tag, Folder, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -262,6 +262,49 @@ export default function RecipePage() {
                 >
                   WhatsApp
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recipe Description */}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                <BookOpen className="h-6 w-6 mr-3 text-fresh-green" />
+                Sobre esta Receita
+              </h3>
+              <div className="prose prose-lg text-gray-700 leading-relaxed">
+                <p>{recipe.description}</p>
+                
+                {/* Additional detailed description if available */}
+                {recipe.detailedDescription && (
+                  <div className="mt-4 space-y-3">
+                    {recipe.detailedDescription.split('\n').map((paragraph: string, index: number) => (
+                      paragraph.trim() && (
+                        <p key={index}>{paragraph}</p>
+                      )
+                    ))}
+                  </div>
+                )}
+                
+                {/* Recipe highlights */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <Clock className="h-8 w-8 text-fresh-green mx-auto mb-2" />
+                    <div className="font-semibold text-gray-800">{recipe.cookTime} min</div>
+                    <div className="text-sm text-gray-600">Tempo de preparo</div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                    <Users className="h-8 w-8 text-warm-orange mx-auto mb-2" />
+                    <div className="font-semibold text-gray-800">{recipe.servings} pessoas</div>
+                    <div className="text-sm text-gray-600">Rendimento</div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <BarChart3 className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <div className="font-semibold text-gray-800">{recipe.difficulty}</div>
+                    <div className="text-sm text-gray-600">Dificuldade</div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
