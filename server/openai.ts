@@ -97,6 +97,12 @@ Outros requisitos:
 
     const generatedRecipe = JSON.parse(content) as GeneratedRecipe;
     
+    // Log para debug
+    console.log("🔍 Generated recipe external links:", {
+      title: generatedRecipe.externalRecipeTitle,
+      url: generatedRecipe.externalRecipeUrl
+    });
+    
     // Validate required fields
     if (!generatedRecipe.title || !generatedRecipe.ingredients || !generatedRecipe.instructions) {
       throw new Error("Generated recipe is missing required fields");

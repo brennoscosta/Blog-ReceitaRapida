@@ -119,6 +119,8 @@ ${generatedRecipe.tips.map(tip => `- ${tip}`).join('\n')}`;
       hashtags: generatedRecipe.hashtags,
       category: generatedRecipe.category,
       subcategory: generatedRecipe.subcategory,
+      externalRecipeTitle: generatedRecipe.externalRecipeTitle,
+      externalRecipeUrl: generatedRecipe.externalRecipeUrl,
       published: true,
     };
 

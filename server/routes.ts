@@ -160,6 +160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hashtags: generatedRecipe.hashtags,
         category: category,
         subcategory: subcategory,
+        externalRecipeTitle: generatedRecipe.externalRecipeTitle,
+        externalRecipeUrl: generatedRecipe.externalRecipeUrl,
         published: false, // Preview mode
       };
 
