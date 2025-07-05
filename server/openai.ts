@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { downloadCompressAndUpload, checkS3Configuration } from "./s3Upload";
+import { storage } from "./storage";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -24,6 +25,50 @@ interface GeneratedRecipe {
   subcategory: string;
   externalRecipeTitle: string;
   externalRecipeUrl: string;
+}
+
+// Função para verificar se uma receita similar já existe
+async function checkDuplicateRecipe(title: string): Promise<boolean> {
+  try {
+    // Busca receitas existentes com títulos similares
+    const existingRecipes = await storage.searchRecipes(title);
+    
+    // Verifica se alguma receita tem título muito similar (ignora maiúsculas/minúsculas e acentos)
+    const normalizeTitle = (str: string) => str.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^\w\s]/g, "") // Remove pontuação
+      .trim();
+    
+    const normalizedNewTitle = normalizeTitle(title);
+    
+    for (const recipe of existingRecipes) {
+      const normalizedExistingTitle = normalizeTitle(recipe.title);
+      
+      // Se a similaridade for muito alta, considera duplicata
+      if (normalizedExistingTitle === normalizedNewTitle) {
+        return true;
+      }
+      
+      // Verifica similaridade por palavras-chave
+      const newWords = normalizedNewTitle.split(/\s+/);
+      const existingWords = normalizedExistingTitle.split(/\s+/);
+      
+      const commonWords = newWords.filter(word => 
+        word.length > 3 && existingWords.includes(word)
+      );
+      
+      // Se 70% ou mais das palavras principais coincidem, considera similar demais
+      if (commonWords.length >= Math.max(2, Math.floor(newWords.length * 0.7))) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error checking duplicate recipe:", error);
+    return false; // Em caso de erro, permite a criação
+  }
 }
 
 export async function generateRecipe(
@@ -108,6 +153,14 @@ IMPORTANTE para links externos:
       throw new Error("Generated recipe is missing required fields");
     }
 
+    // Verificar se é receita duplicada
+    const isDuplicate = await checkDuplicateRecipe(generatedRecipe.title);
+    if (isDuplicate) {
+      console.log(`❌ Receita duplicada detectada: "${generatedRecipe.title}"`);
+      throw new Error(`Receita similar já existe: "${generatedRecipe.title}". Tente uma receita diferente.`);
+    }
+
+    console.log(`✅ Receita única confirmada: "${generatedRecipe.title}"`);
     return generatedRecipe;
   } catch (error) {
     console.error("Error generating recipe:", error);

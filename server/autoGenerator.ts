@@ -1,38 +1,139 @@
 import { storage } from "./storage";
 import { generateRecipe, generateRecipeImage } from "./openai";
 
-// Lista de ideias de receitas aleatórias para geração automática
+// Lista expandida de ideias de receitas para geração automática (100+ opções para evitar duplicatas)
 const recipeIdeas = [
-  "bolo de chocolate sem glúten",
-  "salada de quinoa com legumes",
-  "frango grelhado com ervas",
-  "sopa de abóbora cremosa",
-  "panqueca integral de banana",
-  "lasanha de berinjela",
-  "risotto de camarão",
-  "hambúrguer de grão-de-bico",
-  "torta de limão",
-  "curry de batata-doce",
-  "peixe assado com legumes",
-  "smoothie de frutas vermelhas",
-  "pão integral caseiro",
-  "mousse de maracujá",
-  "strogonoff de cogumelos",
-  "pizza integral de rúcula",
-  "coxinha de frango assada",
-  "salada tropical com manga",
-  "brownie de cacau",
-  "sopa de lentilha com bacon",
-  "wrap de frango com abacate",
-  "pudim de chia",
-  "escondidinho de batata-doce",
-  "bolinho de bacalhau",
-  "vitamina de açaí",
-  "macarrão ao pesto",
+  // Pratos principais brasileiros
+  "feijoada light",
+  "moqueca de peixe",
+  "bobó de camarão fit",
+  "baião de dois integral",
+  "caldo verde mineiro",
+  "vatapá de frango",
+  "tutu de feijão",
+  "pacu assado com farofa",
+  "picanha na churrasqueira",
+  "costela de porco no bafo",
+  
+  // Massas e risotos
+  "macarrão ao pesto de manjericão",
+  "lasanha de abobrinha",
+  "nhoque de batata-doce",
+  "carbonara integral",
+  "risotto de cogumelos",
+  "talharim com camarão",
+  "canelone de ricota",
+  "espaguete à carbonara fit",
+  "ravioli de abóbora",
+  "penne com molho de tomate fresco",
+  
+  // Carnes e aves
+  "frango xadrez",
+  "bife à parmegiana fit",
+  "carne de panela",
+  "frango refogado com quiabo",
+  "almôndegas de peru",
+  "escalope de frango",
+  "coxão mole ao molho madeira",
+  "peito de peru defumado",
+  "frango ao curry",
+  "carne de sol com macaxeira",
+  
+  // Peixes e frutos do mar
+  "salmão grelhado com ervas",
+  "bacalhau à brás",
+  "caldeirada de peixe",
+  "camarão na moranga",
+  "tilápia no papillote",
+  "linguado grelhado",
+  "casquinha de siri",
+  "bobo de camarão",
+  "moqueca capixaba",
+  "peixe ensopado",
+  
+  // Sopas e caldos
+  "canja de galinha",
+  "sopa de mandioquinha",
+  "caldo de feijão",
+  "sopa de ervilha",
+  "consommé de legumes",
+  "sopa de tomate",
+  "caldo verde",
+  "sopa de cebola",
+  "gazpacho brasileiro",
+  "sopa de batata-baroa",
+  
+  // Saladas e pratos leves
+  "salada de grão-de-bico",
+  "tabule brasileiro",
+  "salada de beterraba",
+  "salada caesar fit",
+  "salada de palmito",
+  "salada de feijão fradinho",
+  "salada morna de quinoa",
+  "salada de rúcula com pera",
+  "salada de lentilha",
+  "salada tropical",
+  
+  // Sobremesas tradicionais
   "brigadeiro gourmet",
-  "quiche de espinafre",
-  "tapioca recheada",
-  "cookies de aveia"
+  "pudim de leite condensado",
+  "quindim caseiro",
+  "beijinho de coco",
+  "cocada queimada",
+  "pavê de chocolate",
+  "mousse de chocolate",
+  "torta de morango",
+  "petit gateau",
+  "tiramisu brasileiro",
+  
+  // Bolos e tortas
+  "bolo de cenoura com cobertura",
+  "torta de limão siciliano",
+  "bolo de fubá cremoso",
+  "torta de maçã",
+  "bolo de banana",
+  "cheesecake de maracujá",
+  "bolo de laranja",
+  "torta holandesa",
+  "bolo prestígio",
+  "bolo de chocolate molhadinho",
+  
+  // Lanches e salgados
+  "pão de queijo mineiro",
+  "coxinha de frango",
+  "pastel de queijo",
+  "esfiha de carne",
+  "empada de palmito",
+  "sanduíche natural",
+  "wrap integral",
+  "crepe salgado",
+  "quiche de legumes",
+  "torta salgada de frango",
+  
+  // Bebidas e vitaminas
+  "vitamina de banana com aveia",
+  "suco verde detox",
+  "smoothie de frutas vermelhas",
+  "batida de coco",
+  "caipirinha de frutas",
+  "limonada suíça",
+  "água saborizada",
+  "chá gelado de hibisco",
+  "vitamina de açaí",
+  "suco de laranja com cenoura",
+  
+  // Pratos vegetarianos
+  "hambúrguer de quinoa",
+  "estrogonofe de cogumelos",
+  "curry de grão-de-bico",
+  "lasanha de berinjela",
+  "risotto de abóbora",
+  "quiche sem carne",
+  "salada de lentilha",
+  "wrap vegano",
+  "bolinho de aipim",
+  "escondidinho vegetal"
 ];
 
 function createSlug(title: string): string {
@@ -65,11 +166,37 @@ async function generateRandomRecipe(): Promise<void> {
   try {
     console.log("🤖 Generating automatic recipe...");
     
-    // Escolher uma ideia aleatória
-    const randomIdea = recipeIdeas[Math.floor(Math.random() * recipeIdeas.length)];
+    // Tentar gerar receita única por até 5 tentativas
+    let generatedRecipe;
+    let attempts = 0;
+    const maxAttempts = 5;
     
-    // Gerar receita com IA
-    const generatedRecipe = await generateRecipe(randomIdea);
+    while (attempts < maxAttempts) {
+      attempts++;
+      
+      // Escolher uma ideia aleatória
+      const randomIdea = recipeIdeas[Math.floor(Math.random() * recipeIdeas.length)];
+      
+      try {
+        // Gerar receita com IA
+        generatedRecipe = await generateRecipe(randomIdea);
+        break; // Se chegou aqui, a receita é única
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("Receita similar já existe")) {
+          console.log(`🔄 Tentativa ${attempts}/${maxAttempts}: Receita duplicada, tentando novamente...`);
+          if (attempts === maxAttempts) {
+            throw new Error("Não foi possível gerar receita única após 5 tentativas");
+          }
+          continue; // Tenta novamente
+        } else {
+          throw error; // Outro erro, propaga
+        }
+      }
+    }
+    
+    if (!generatedRecipe) {
+      throw new Error("Falha na geração de receita após múltiplas tentativas");
+    }
     
     // Tentar gerar imagem, continuar sem imagem se falhar
     let imageUrl = null;
