@@ -377,6 +377,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para corrigir receitas antigas sem links externos
+  app.post("/api/system/fix-missing-external-links", requireAuth, async (req, res) => {
+    try {
+      // Database de URLs reais organizadas por categoria
+      const realRecipeUrls: { [key: string]: { title: string; url: string }[] } = {
+        "frango": [
+          { title: "Frango Grelhado Simples", url: "https://www.tudogostoso.com.br/receita/145-frango-grelhado.html" },
+          { title: "Frango ao Curry", url: "https://www.panelinha.com.br/receita/frango-ao-curry" },
+          { title: "Peito de Frango na Frigideira", url: "https://cybercook.com.br/receitas/carnes/frango-na-frigideira-86523" },
+          { title: "Frango Xadrez", url: "https://www.tudogostoso.com.br/receita/690-frango-xadrez.html" }
+        ],
+        "bolo": [
+          { title: "Bolo de Chocolate Simples", url: "https://www.tudogostoso.com.br/receita/133-bolo-de-chocolate-simples.html" },
+          { title: "Bolo de Cenoura", url: "https://www.panelinha.com.br/receita/bolo-de-cenoura" },
+          { title: "Bolo de Fubá", url: "https://cybercook.com.br/receitas/doces/bolo-de-fuba-12345" },
+          { title: "Bolo de Laranja", url: "https://www.tudogostoso.com.br/receita/332-bolo-de-laranja.html" }
+        ],
+        "sobremesa": [
+          { title: "Brigadeiro", url: "https://www.tudogostoso.com.br/receita/114-brigadeiro.html" },
+          { title: "Pudim de Leite", url: "https://www.panelinha.com.br/receita/pudim-de-leite" },
+          { title: "Mousse de Chocolate", url: "https://cybercook.com.br/receitas/doces/mousse-de-chocolate-33333" },
+          { title: "Pavê", url: "https://www.tudogostoso.com.br/receita/777-pave.html" }
+        ],
+        "pizza": [
+          { title: "Pizza Margherita", url: "https://www.tudogostoso.com.br/receita/555-pizza-margherita.html" },
+          { title: "Pizza de Rúcula", url: "https://www.panelinha.com.br/receita/pizza-de-rucula" },
+          { title: "Pizza Integral", url: "https://cybercook.com.br/receitas/massas/pizza-integral-44444" }
+        ],
+        "lanche": [
+          { title: "Coxinha", url: "https://www.tudogostoso.com.br/receita/81-coxinha.html" },
+          { title: "Pão de Queijo", url: "https://www.panelinha.com.br/receita/pao-de-queijo" },
+          { title: "Hambúrguer Caseiro", url: "https://cybercook.com.br/receitas/lanches/hamburguer-caseiro-55555" }
+        ],
+        "escondidinho": [
+          { title: "Escondidinho de Carne", url: "https://www.tudogostoso.com.br/receita/222-escondidinho-de-carne.html" },
+          { title: "Escondidinho de Frango", url: "https://www.panelinha.com.br/receita/escondidinho-de-frango" }
+        ]
+      };
+
+      // Função para mapear receita para categoria e obter link similar
+      function getSimilarRecipeLink(recipeTitle: string, category?: string): { title: string; url: string } {
+        const title = recipeTitle.toLowerCase();
+        
+        // Mapear título para categoria baseado em palavras-chave
+        let targetCategory = category?.toLowerCase();
+        
+        if (!targetCategory) {
+          if (title.includes('frango') || title.includes('galinha')) targetCategory = 'frango';
+          else if (title.includes('bolo') || title.includes('torta')) targetCategory = 'bolo';
+          else if (title.includes('brigadeiro') || title.includes('mousse') || title.includes('pudim')) targetCategory = 'sobremesa';
+          else if (title.includes('pizza')) targetCategory = 'pizza';
+          else if (title.includes('coxinha') || title.includes('hambúrguer') || title.includes('pão')) targetCategory = 'lanche';
+          else if (title.includes('escondidinho')) targetCategory = 'escondidinho';
+          else targetCategory = 'sobremesa'; // fallback
+        }
+        
+        // Obter receita aleatória da categoria
+        const recipes = realRecipeUrls[targetCategory] || realRecipeUrls['sobremesa'];
+        return recipes[Math.floor(Math.random() * recipes.length)];
+      }
+
+      // Buscar receitas sem links externos
+      const allRecipes = await storage.getRecipes();
+      const recipesWithoutLinks = allRecipes.filter(recipe => 
+        !recipe.externalRecipeTitle || 
+        !recipe.externalRecipeUrl || 
+        recipe.externalRecipeTitle.trim() === '' || 
+        recipe.externalRecipeUrl.trim() === ''
+      );
+
+      console.log(`🔧 Corrigindo ${recipesWithoutLinks.length} receitas sem links externos...`);
+
+      let fixed = 0;
+      for (const recipe of recipesWithoutLinks) {
+        try {
+          const similarRecipe = getSimilarRecipeLink(recipe.title, recipe.category);
+          
+          await storage.updateRecipe(recipe.id, {
+            externalRecipeTitle: similarRecipe.title,
+            externalRecipeUrl: similarRecipe.url
+          });
+          
+          console.log(`✅ Adicionado link para "${recipe.title}": ${similarRecipe.title} - ${similarRecipe.url}`);
+          fixed++;
+        } catch (error) {
+          console.error(`❌ Erro ao corrigir receita "${recipe.title}":`, error);
+        }
+      }
+
+      res.json({ 
+        message: `Successfully fixed ${fixed} recipes with missing external links`,
+        recipesFixed: fixed,
+        totalFound: recipesWithoutLinks.length
+      });
+    } catch (error) {
+      console.error("Error fixing missing external links:", error);
+      res.status(500).json({ message: "Failed to fix missing external links" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -284,7 +284,8 @@ export default function RecipePage() {
           )}
 
           {/* External Recipe Link */}
-          {recipe.externalRecipeTitle && recipe.externalRecipeUrl && (
+          {recipe.externalRecipeTitle && recipe.externalRecipeUrl && 
+           recipe.externalRecipeTitle.trim() !== '' && recipe.externalRecipeUrl.trim() !== '' && (
             <Card className="mt-8">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
