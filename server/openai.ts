@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { downloadCompressAndUpload, checkS3Configuration } from "./s3Upload";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -104,6 +105,9 @@ Outros requisitos:
 
 export async function generateRecipeImage(recipeTitle: string): Promise<string> {
   try {
+    console.log(`🎨 Gerando imagem para receita: "${recipeTitle}"`);
+    
+    // Gerar imagem com OpenAI DALL-E
     const response = await openai.images.generate({
       model: "dall-e-2", // Using DALL-E 2 for cost efficiency as requested by user
       prompt: `Uma foto profissional e apetitosa de "${recipeTitle}", bem iluminada, com ingredientes frescos, estilo culinário brasileiro, fundo neutro, alta qualidade, adequada para blog de receitas`,
@@ -111,10 +115,59 @@ export async function generateRecipeImage(recipeTitle: string): Promise<string> 
       size: "1024x1024",
     });
 
-    return response.data?.[0]?.url || "";
+    const imageUrl = response.data?.[0]?.url;
+    if (!imageUrl) {
+      throw new Error("OpenAI não retornou URL da imagem");
+    }
+
+    console.log(`📷 Imagem gerada pela OpenAI: ${imageUrl}`);
+
+    // Verificar se S3 está configurado
+    const s3Ready = await checkS3Configuration();
+    if (!s3Ready) {
+      console.warn("⚠️ S3 não configurado, usando URL direta da OpenAI");
+      return imageUrl;
+    }
+
+    // Comprimir e fazer upload para S3
+    const fileName = `receita-${recipeTitle.toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')}.webp`;
+
+    console.log(`🗜️ Comprimindo e enviando para S3: ${fileName}`);
+    
+    const uploadResult = await downloadCompressAndUpload(imageUrl, fileName);
+    
+    console.log(`✅ Imagem salva no S3: ${uploadResult.url}`);
+    console.log(`📊 Compressão: ${(uploadResult.originalSize / 1024).toFixed(1)}KB → ${(uploadResult.compressedSize / 1024).toFixed(1)}KB`);
+
+    return uploadResult.url;
+
   } catch (error) {
-    console.error("Error generating recipe image:", error);
-    // Return a placeholder image URL if generation fails
-    return "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600";
+    console.error("❌ Erro ao gerar/processar imagem:", error);
+    
+    // Fallback: tentar só gerar a imagem sem S3
+    try {
+      const response = await openai.images.generate({
+        model: "dall-e-2",
+        prompt: `Uma foto profissional e apetitosa de "${recipeTitle}", bem iluminada, com ingredientes frescos, estilo culinário brasileiro, fundo neutro, alta qualidade, adequada para blog de receitas`,
+        n: 1,
+        size: "1024x1024",
+      });
+      
+      const fallbackUrl = response.data?.[0]?.url;
+      if (fallbackUrl) {
+        console.log(`🔄 Usando URL direta da OpenAI como fallback: ${fallbackUrl}`);
+        return fallbackUrl;
+      }
+    } catch (fallbackError) {
+      console.error("❌ Fallback também falhou:", fallbackError);
+    }
+
+    // Último recurso: imagem placeholder
+    const placeholderUrl = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600";
+    console.log(`🔄 Usando imagem placeholder: ${placeholderUrl}`);
+    return placeholderUrl;
   }
 }

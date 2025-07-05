@@ -74,7 +74,7 @@ export async function compressAndUploadImage(
 
   } catch (error) {
     console.error('❌ Erro ao comprimir e enviar imagem para S3:', error);
-    throw new Error(`Falha no upload da imagem: ${error.message}`);
+    throw new Error(`Falha no upload da imagem: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 }
 
@@ -103,7 +103,7 @@ export async function downloadCompressAndUpload(
 
   } catch (error) {
     console.error('❌ Erro ao baixar e processar imagem:', error);
-    throw new Error(`Falha no processamento da imagem: ${error.message}`);
+    throw new Error(`Falha no processamento da imagem: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 }
 
@@ -116,7 +116,7 @@ export async function checkS3Configuration(): Promise<boolean> {
     console.log(`✅ Bucket S3 "${BUCKET_NAME}" está acessível`);
     return true;
   } catch (error) {
-    console.error(`❌ Erro ao acessar bucket S3 "${BUCKET_NAME}":`, error.message);
+    console.error(`❌ Erro ao acessar bucket S3 "${BUCKET_NAME}":`, error instanceof Error ? error.message : 'Erro desconhecido');
     return false;
   }
 }
