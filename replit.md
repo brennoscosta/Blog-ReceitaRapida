@@ -99,6 +99,7 @@ This is a modern, automated recipe blog application called "Receita Rápida" (Qu
 - July 05, 2025. Enhanced recipe system: removed sharing section, added AI-generated external recipe links for similar recipes from Brazilian cooking sites
 - July 05, 2025. Enhanced external links system: expanded to 15+ Brazilian cooking sites (TudoGostoso, Panelinha, Cybercook, Receitas Nestlé, Ana Maria Braga, GNT, etc.) with smart rotation to ensure maximum variety
 - July 05, 2025. Implemented anti-duplicate system: intelligent recipe comparison, automatic retry mechanism (up to 5 attempts), expanded to 100+ recipe ideas, and smart similarity detection to prevent any duplicate recipes
+- July 05, 2025. Fixed external links system: replaced AI-generated fictional URLs with real Brazilian recipe URLs from TudoGostoso, Panelinha, Cybercook, Receitas Nestlé, etc., ensuring all external links work correctly
 
 ## User Preferences
 
