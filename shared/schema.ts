@@ -41,6 +41,7 @@ export const recipes = pgTable("recipes", {
   title: varchar("title", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description").notNull(),
+  detailedDescription: text("detailed_description"),
   content: text("content").notNull(),
   ingredients: jsonb("ingredients").notNull(),
   instructions: jsonb("instructions").notNull(),

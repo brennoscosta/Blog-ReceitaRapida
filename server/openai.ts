@@ -9,6 +9,7 @@ const openai = new OpenAI({
 interface GeneratedRecipe {
   title: string;
   description: string;
+  detailedDescription: string;
   ingredients: string[];
   instructions: string[];
   tips: string[];
@@ -37,6 +38,7 @@ Formato JSON obrigatório:
 {
   "title": "Título atrativo da receita",
   "description": "Descrição resumida em 1-2 frases",
+  "detailedDescription": "Uma descrição completa e detalhada da receita de 3-4 parágrafos, explicando a origem do prato, seus benefícios, ocasiões ideais para servir, variações possíveis e o que torna esta receita especial. Seja descritiva e envolvente.",
   "ingredients": ["ingrediente 1", "ingrediente 2", "..."],
   "instructions": ["passo 1", "passo 2", "..."],
   "tips": ["dica 1", "dica 2", "..."],
