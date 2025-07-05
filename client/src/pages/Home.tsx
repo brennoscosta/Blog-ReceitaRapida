@@ -82,7 +82,19 @@ export default function Home() {
       <Header />
       <main className="pt-16">
         {/* Hero Section */}
-        <div className="relative text-white py-20 bg-gradient-to-br from-fresh-green via-emerald-500 to-dark-green overflow-hidden">
+        <div 
+          className="relative text-white py-20 overflow-hidden"
+          style={{
+            backgroundImage: `
+              linear-gradient(135deg, rgba(76, 175, 80, 0.92) 0%, rgba(56, 142, 60, 0.90) 50%, rgba(46, 125, 50, 0.88) 100%),
+              url('https://nuvee.s3.us-east-2.amazonaws.com/receita-salada-de-gr-o-de-bico-com-tomate-e-manjeric-o.webp')
+            `,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        >
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="fill-white">
