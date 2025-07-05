@@ -283,7 +283,33 @@ export default function RecipePage() {
             </Card>
           )}
 
-
+          {/* External Recipe Link */}
+          {recipe.externalRecipeTitle && recipe.externalRecipeUrl && (
+            <Card className="mt-8">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                  <ArrowLeft className="h-5 w-5 mr-3 text-warm-orange rotate-180" />
+                  Receita Similar
+                </h3>
+                <div className="bg-gradient-to-r from-orange-50 to-green-50 p-4 rounded-lg">
+                  <p className="text-gray-700 mb-3">
+                    Encontramos uma receita similar que você pode gostar:
+                  </p>
+                  <a 
+                    href={recipe.externalRecipeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-warm-orange hover:bg-orange-600 text-white rounded-lg transition-colors duration-200"
+                  >
+                    <span className="font-medium">{recipe.externalRecipeTitle}</span>
+                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Related Recipes */}
           {relatedRecipes && relatedRecipes.length > 0 && (

@@ -22,6 +22,8 @@ interface GeneratedRecipe {
   hashtags: string[];
   category: string;
   subcategory: string;
+  externalRecipeTitle: string;
+  externalRecipeUrl: string;
 }
 
 export async function generateRecipe(
@@ -50,7 +52,9 @@ Formato JSON obrigatório:
   "metaKeywords": "palavra1, palavra2, palavra3",
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
   "category": "Categoria principal (ex: Sobremesas, Pratos Principais, Lanches)",
-  "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)"
+  "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)",
+  "externalRecipeTitle": "Título de uma receita similar encontrada em sites como TudoGostoso, Panelinha, ou Cybercook",
+  "externalRecipeUrl": "URL completa de uma receita similar real de um site brasileiro conhecido (TudoGostoso, Panelinha, Cybercook, etc.)"
 }
 
 Instruções para cookTime e difficulty:
