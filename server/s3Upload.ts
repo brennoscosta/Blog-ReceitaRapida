@@ -9,7 +9,7 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION || 'us-east-1'
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'receita-rapida-test-bucket';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'nuvee';
 
 interface ImageUploadResult {
   url: string;
@@ -108,15 +108,41 @@ export async function downloadCompressAndUpload(
 }
 
 /**
+ * Lista buckets disponíveis na conta AWS
+ */
+export async function listAvailableBuckets(): Promise<string[]> {
+  try {
+    const result = await s3.listBuckets().promise();
+    const buckets = result.Buckets?.map(bucket => bucket.Name || '') || [];
+    console.log('📋 Buckets disponíveis:', buckets);
+    return buckets;
+  } catch (error) {
+    console.error('❌ Erro ao listar buckets:', error instanceof Error ? error.message : 'Erro desconhecido');
+    return [];
+  }
+}
+
+/**
  * Verifica se o bucket S3 está configurado corretamente
  */
 export async function checkS3Configuration(): Promise<boolean> {
   try {
+    // Se não há bucket configurado, tentar listar buckets disponíveis
+    if (!process.env.AWS_S3_BUCKET) {
+      console.log('⚠️ AWS_S3_BUCKET não configurado');
+      await listAvailableBuckets();
+      return false;
+    }
+
     await s3.headBucket({ Bucket: BUCKET_NAME }).promise();
     console.log(`✅ Bucket S3 "${BUCKET_NAME}" está acessível`);
     return true;
   } catch (error) {
     console.error(`❌ Erro ao acessar bucket S3 "${BUCKET_NAME}":`, error instanceof Error ? error.message : 'Erro desconhecido');
+    
+    // Tentar listar buckets disponíveis para ajudar o usuário
+    console.log('🔍 Tentando listar buckets disponíveis...');
+    await listAvailableBuckets();
     return false;
   }
 }
