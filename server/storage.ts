@@ -21,7 +21,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   // Recipe operations
-  getRecipes(category?: string, subcategory?: string): Promise<Recipe[]>;
+  getRecipes(category?: string, subcategory?: string, page?: number, limit?: number): Promise<{ recipes: Recipe[], total: number, totalPages: number, currentPage: number }>;
   getRecipeBySlug(slug: string): Promise<Recipe | undefined>;
   getRecipeById(id: number): Promise<Recipe | undefined>;
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
@@ -62,7 +62,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Recipe operations
-  async getRecipes(category?: string, subcategory?: string): Promise<Recipe[]> {
+  async getRecipes(category?: string, subcategory?: string, page?: number, limit?: number): Promise<{ recipes: Recipe[], total: number, totalPages: number, currentPage: number }> {
+    const currentPage = Math.max(1, page || 1);
+    const recordsPerPage = limit || 8;
+    const offset = (currentPage - 1) * recordsPerPage;
+
     let whereConditions = [eq(recipes.published, true)];
     
     if (category) {
@@ -72,12 +76,30 @@ export class DatabaseStorage implements IStorage {
     if (subcategory) {
       whereConditions.push(eq(recipes.subcategory, subcategory));
     }
+
+    // Buscar total de registros para calcular páginas
+    const totalResult = await db.select({ count: sql`count(*)` })
+      .from(recipes)
+      .where(and(...whereConditions));
     
-    return await db
+    const total = Number(totalResult[0].count);
+    const totalPages = Math.ceil(total / recordsPerPage);
+
+    // Buscar receitas com paginação
+    const paginatedRecipes = await db
       .select()
       .from(recipes)
       .where(and(...whereConditions))
-      .orderBy(desc(recipes.createdAt));
+      .orderBy(desc(recipes.createdAt))
+      .limit(recordsPerPage)
+      .offset(offset);
+    
+    return {
+      recipes: paginatedRecipes,
+      total,
+      totalPages,
+      currentPage
+    };
   }
 
   async getRecipeBySlug(slug: string): Promise<Recipe | undefined> {

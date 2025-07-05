@@ -6,24 +6,34 @@ import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { X, Filter } from "lucide-react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { X, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Recipe } from "@shared/schema";
 
 export default function Home() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState<{
     category?: string;
     subcategory?: string;
     hashtag?: string;
   }>({});
 
-  const { data: recipes, isLoading } = useQuery<Recipe[]>({
-    queryKey: ["/api/recipes"],
+  const { data: recipesData, isLoading } = useQuery<{
+    recipes: Recipe[],
+    total: number,
+    totalPages: number,
+    currentPage: number
+  }>({
+    queryKey: ["/api/recipes", { page: currentPage, limit: 8 }],
   });
 
-  // Filtrar receitas baseado nos filtros ativos
+  // Extrair dados da resposta paginada
+  const recipes = recipesData?.recipes || [];
+  const totalPages = recipesData?.totalPages || 0;
+  const total = recipesData?.total || 0;
+  
+  // Para filtros, vamos aplicar no lado do cliente por enquanto
   const filteredRecipes = useMemo(() => {
-    if (!recipes) return [];
-    
     return recipes.filter(recipe => {
       if (activeFilters.category && recipe.category !== activeFilters.category) {
         return false;
@@ -47,6 +57,7 @@ export default function Home() {
       category: prev.category === category ? undefined : category,
       subcategory: undefined // Limpar subcategoria ao mudar categoria
     }));
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleSubcategoryFilter = (subcategory: string) => {
@@ -54,6 +65,7 @@ export default function Home() {
       ...prev,
       subcategory: prev.subcategory === subcategory ? undefined : subcategory
     }));
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleHashtagFilter = (hashtag: string) => {
@@ -61,10 +73,19 @@ export default function Home() {
       ...prev,
       hashtag: prev.hashtag === hashtag ? undefined : hashtag
     }));
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const clearAllFilters = () => {
     setActiveFilters({});
+    setCurrentPage(1); // Reset to first page when clearing filters
+  };
+
+  // Function to handle page changes
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const hasActiveFilters = Object.values(activeFilters).some(filter => filter !== undefined);
@@ -223,7 +244,7 @@ export default function Home() {
             ) : filteredRecipes && filteredRecipes.length > 0 ? (
               <>
                 <div className="text-center mb-6 text-medium-gray">
-                  Mostrando {filteredRecipes.length} de {recipes?.length || 0} receitas
+                  Mostrando {filteredRecipes.length} de {total} receitas (Página {currentPage} de {totalPages})
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredRecipes.map((recipe) => (
@@ -236,6 +257,67 @@ export default function Home() {
                     />
                   ))}
                 </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-12">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (currentPage > 1) handlePageChange(currentPage - 1);
+                            }}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                          />
+                        </PaginationItem>
+                        
+                        {/* Page numbers */}
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handlePageChange(pageNum);
+                                }}
+                                isActive={currentPage === pageNum}
+                                className={currentPage === pageNum ? "bg-fresh-green text-white hover:bg-dark-green" : ""}
+                              >
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        })}
+                        
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                            }}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </>
             ) : hasActiveFilters ? (
               <div className="text-center py-12">

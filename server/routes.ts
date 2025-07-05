@@ -32,12 +32,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public routes
   app.get("/api/recipes", async (req, res) => {
     try {
-      const { category, subcategory } = req.query;
-      const recipes = await storage.getRecipes(
+      const { category, subcategory, page, limit } = req.query;
+      const result = await storage.getRecipes(
         category as string,
-        subcategory as string
+        subcategory as string,
+        page ? parseInt(page as string) : undefined,
+        limit ? parseInt(limit as string) : undefined
       );
-      res.json(recipes);
+      res.json(result);
     } catch (error) {
       console.error("Error fetching recipes:", error);
       res.status(500).json({ message: "Failed to fetch recipes" });
