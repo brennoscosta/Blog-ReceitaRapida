@@ -25,9 +25,9 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/admin" component={AdminPanel} />
         </>
       )}
+      <Route path="/admin" component={AdminPanel} />
       <Route path="/receita/:slug" component={RecipePage} />
       <Route component={NotFound} />
     </Switch>
