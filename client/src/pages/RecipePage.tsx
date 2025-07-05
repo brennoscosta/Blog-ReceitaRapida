@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2, Tag, Folder, BookOpen } from "lucide-react";
+import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Tag, Folder, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,22 +80,7 @@ export default function RecipePage() {
     );
   }
 
-  const shareRecipe = (platform: string) => {
-    const url = window.location.href;
-    const title = `Confira esta receita: ${recipe.title}`;
-    
-    switch (platform) {
-      case "facebook":
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank");
-        break;
-      case "twitter":
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, "_blank");
-        break;
-      case "whatsapp":
-        window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`, "_blank");
-        break;
-    }
-  };
+
 
   // Ensure arrays are properly handled
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
@@ -233,38 +218,7 @@ export default function RecipePage() {
             </div>
           </div>
 
-          {/* Share Section */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center">
-                  <Share2 className="h-5 w-5 mr-2 text-fresh-green" />
-                  <span className="font-semibold">Compartilhar receita:</span>
-                </div>
-                <Button 
-                  onClick={() => shareRecipe("facebook")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  size="sm"
-                >
-                  Facebook
-                </Button>
-                <Button 
-                  onClick={() => shareRecipe("twitter")}
-                  className="bg-blue-400 hover:bg-blue-500 text-white"
-                  size="sm"
-                >
-                  Twitter
-                </Button>
-                <Button 
-                  onClick={() => shareRecipe("whatsapp")}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  WhatsApp
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Recipe Description */}
           <Card className="mb-8">
