@@ -53,8 +53,8 @@ Formato JSON obrigatório:
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
   "category": "Categoria principal (ex: Sobremesas, Pratos Principais, Lanches)",
   "subcategory": "Subcategoria específica (ex: Bolos, Carnes, Sanduíches)",
-  "externalRecipeTitle": "Título de uma receita similar encontrada em sites como TudoGostoso, Panelinha, ou Cybercook",
-  "externalRecipeUrl": "URL completa de uma receita similar real de um site brasileiro conhecido (TudoGostoso, Panelinha, Cybercook, etc.)"
+  "externalRecipeTitle": "Título de uma receita similar encontrada em sites brasileiros de culinária",
+  "externalRecipeUrl": "URL completa de uma receita similar real de um dos seguintes sites brasileiros: TudoGostoso, Panelinha, Cybercook, Receitas Nestlé, Receitas.com, Ana Maria Braga, GNT, Tempero Drag, Receitas Globo, UOL Culinária, Portal Tudo Gostoso, Petitchef Brasil, Receitas de Comida, Blog da Mimis, Amando Cozinhar, Vix Culinária, ou outros sites brasileiros conhecidos de receitas"
 }
 
 Instruções para cookTime e difficulty:
@@ -72,14 +72,20 @@ Outros requisitos:
 - 10 hashtags relevantes para categorização e busca
 - Categoria e subcategoria bem definidas para filtros
 - SEO otimizado para blogs de culinária
-- Foco em receitas saudáveis e saborosas`;
+- Foco em receitas saudáveis e saborosas
+
+IMPORTANTE para links externos:
+- VARIE sempre o site de referência - NÃO use sempre o mesmo site
+- Use diferentes sites brasileiros: Panelinha, Cybercook, Receitas Nestlé, Ana Maria Braga, GNT, Receitas.com, UOL Culinária, etc.
+- Evite repetir o mesmo site consecutivamente
+- URLs devem ser reais e funcionais dos sites mencionados`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo", // Using GPT-3.5-turbo for cost efficiency as requested by user
       messages: [
         {
           role: "system",
-          content: "Você é um chef especialista em receitas brasileiras saudáveis. Responda sempre em JSON válido."
+          content: "Você é um chef especialista em receitas brasileiras saudáveis. Responda sempre em JSON válido. IMPORTANTE: Para links externos, use SEMPRE sites diferentes - varie entre Panelinha, Cybercook, Receitas Nestlé, Ana Maria Braga, GNT, Receitas.com, UOL Culinária, Tempero Drag, etc. NÃO repita o mesmo site consecutivamente."
         },
         {
           role: "user",
@@ -96,12 +102,6 @@ Outros requisitos:
     }
 
     const generatedRecipe = JSON.parse(content) as GeneratedRecipe;
-    
-    // Log para debug
-    console.log("🔍 Generated recipe external links:", {
-      title: generatedRecipe.externalRecipeTitle,
-      url: generatedRecipe.externalRecipeUrl
-    });
     
     // Validate required fields
     if (!generatedRecipe.title || !generatedRecipe.ingredients || !generatedRecipe.instructions) {
