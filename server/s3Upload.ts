@@ -54,8 +54,7 @@ export async function compressAndUploadImage(
       Key: key,
       Body: compressedBuffer,
       ContentType: 'image/webp',
-      CacheControl: 'max-age=31536000', // Cache por 1 ano
-      ACL: 'public-read'
+      CacheControl: 'max-age=31536000' // Cache por 1 ano
     };
 
     const uploadResult = await s3.upload(uploadParams).promise();
@@ -127,11 +126,9 @@ export async function listAvailableBuckets(): Promise<string[]> {
  */
 export async function checkS3Configuration(): Promise<boolean> {
   try {
-    // Se não há bucket configurado, tentar listar buckets disponíveis
+    // Se não há bucket configurado, usar bucket padrão 'nuvee'
     if (!process.env.AWS_S3_BUCKET) {
-      console.log('⚠️ AWS_S3_BUCKET não configurado');
-      await listAvailableBuckets();
-      return false;
+      console.log('⚠️ AWS_S3_BUCKET não configurado, usando bucket padrão: nuvee');
     }
 
     await s3.headBucket({ Bucket: BUCKET_NAME }).promise();
