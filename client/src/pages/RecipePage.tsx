@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
-import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2 } from "lucide-react";
+import { useParams, Link, useLocation } from "wouter";
+import { ArrowLeft, Clock, Users, BarChart3, Check, Lightbulb, Share2, Tag, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,23 @@ import type { Recipe } from "@shared/schema";
 
 export default function RecipePage() {
   const { slug } = useParams<{ slug: string }>();
+  const [, setLocation] = useLocation();
+
+  // Função para navegar para home com filtro de categoria
+  const navigateWithCategoryFilter = (category: string) => {
+    // Como não temos estado global, vamos para home e o usuário pode clicar na categoria lá
+    setLocation('/');
+  };
+
+  // Função para navegar para home com filtro de subcategoria
+  const navigateWithSubcategoryFilter = (subcategory: string) => {
+    setLocation('/');
+  };
+
+  // Função para navegar para home com filtro de hashtag
+  const navigateWithHashtagFilter = (hashtag: string) => {
+    setLocation('/');
+  };
   
   const { data: recipe, isLoading, error } = useQuery({
     queryKey: ["/api/recipes", slug],
@@ -151,7 +168,7 @@ export default function RecipePage() {
             </p>
             
             {/* Recipe Meta */}
-            <div className="flex flex-wrap gap-6 text-sm text-medium-gray">
+            <div className="flex flex-wrap gap-6 text-sm text-medium-gray mb-6">
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2 text-fresh-green" />
                 <span>{recipe.cookTime} minutos</span>
@@ -164,6 +181,55 @@ export default function RecipePage() {
                 <BarChart3 className="h-4 w-4 mr-2 text-fresh-green" />
                 <span>{recipe.difficulty}</span>
               </div>
+            </div>
+
+            {/* Categories and Hashtags */}
+            <div className="space-y-4">
+              {/* Categories */}
+              {(recipe.category || recipe.subcategory) && (
+                <div className="flex items-center flex-wrap gap-2">
+                  <Folder className="h-4 w-4 text-fresh-green" />
+                  <span className="text-sm font-medium text-gray-600">Categoria:</span>
+                  {recipe.category && (
+                    <Badge 
+                      variant="secondary" 
+                      className="cursor-pointer hover:bg-fresh-green hover:text-white transition-colors"
+                      onClick={() => navigateWithCategoryFilter(recipe.category!)}
+                    >
+                      {recipe.category}
+                    </Badge>
+                  )}
+                  {recipe.subcategory && (
+                    <Badge 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-fresh-green hover:text-white hover:border-fresh-green transition-colors"
+                      onClick={() => navigateWithSubcategoryFilter(recipe.subcategory!)}
+                    >
+                      {recipe.subcategory}
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              {/* Hashtags */}
+              {recipe.hashtags && Array.isArray(recipe.hashtags) && recipe.hashtags.length > 0 && (
+                <div className="flex items-start flex-wrap gap-2">
+                  <Tag className="h-4 w-4 text-warm-orange mt-1" />
+                  <span className="text-sm font-medium text-gray-600">Tags:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {(recipe.hashtags as string[]).map((hashtag: string, index: number) => (
+                      <Badge 
+                        key={index}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-warm-orange hover:text-white transition-colors"
+                        onClick={() => navigateWithHashtagFilter(hashtag)}
+                      >
+                        {hashtag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -291,7 +357,13 @@ export default function RecipePage() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {relatedRecipes.slice(0, 6).map((relatedRecipe) => (
-                  <RecipeCard key={relatedRecipe.id} recipe={relatedRecipe} />
+                  <RecipeCard 
+                    key={relatedRecipe.id} 
+                    recipe={relatedRecipe}
+                    onCategoryClick={navigateWithCategoryFilter}
+                    onSubcategoryClick={navigateWithSubcategoryFilter}
+                    onHashtagClick={navigateWithHashtagFilter}
+                  />
                 ))}
               </div>
             </div>

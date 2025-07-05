@@ -13,20 +13,10 @@ import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/auth" component={AuthPage} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-        </>
-      )}
+      <Route path="/" component={Home} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/receita/:slug" component={RecipePage} />
       <Route component={NotFound} />

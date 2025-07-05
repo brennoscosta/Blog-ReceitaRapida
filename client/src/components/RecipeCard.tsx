@@ -1,14 +1,18 @@
-import { Clock } from "lucide-react";
+import { Clock, Tag, Folder } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { Recipe } from "@shared/schema";
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onCategoryClick?: (category: string) => void;
+  onSubcategoryClick?: (subcategory: string) => void;
+  onHashtagClick?: (hashtag: string) => void;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, onCategoryClick, onSubcategoryClick, onHashtagClick }: RecipeCardProps) {
   return (
     <Card className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
@@ -19,12 +23,58 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         />
       </div>
       <CardContent className="p-6">
+        {/* Categorias */}
+        {(recipe.category || recipe.subcategory) && (
+          <div className="flex items-center gap-2 mb-3">
+            <Folder className="h-4 w-4 text-fresh-green" />
+            {recipe.category && (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer hover:bg-fresh-green hover:text-white transition-colors text-xs"
+                onClick={() => onCategoryClick?.(recipe.category!)}
+              >
+                {recipe.category}
+              </Badge>
+            )}
+            {recipe.subcategory && (
+              <Badge 
+                variant="outline" 
+                className="cursor-pointer hover:bg-fresh-green hover:text-white hover:border-fresh-green transition-colors text-xs"
+                onClick={() => onSubcategoryClick?.(recipe.subcategory!)}
+              >
+                {recipe.subcategory}
+              </Badge>
+            )}
+          </div>
+        )}
+
         <h4 className="text-xl font-semibold text-gray-800 mb-3">
           {recipe.title}
         </h4>
         <p className="text-medium-gray mb-4 text-sm line-clamp-3">
-          {recipe.description}
+          {String(recipe.description)}
         </p>
+
+        {/* Hashtags */}
+        {recipe.hashtags && Array.isArray(recipe.hashtags) && recipe.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {(recipe.hashtags as string[]).slice(0, 3).map((hashtag: string, index: number) => (
+              <Badge 
+                key={index}
+                variant="secondary"
+                className="cursor-pointer hover:bg-warm-orange hover:text-white transition-colors text-xs"
+                onClick={() => onHashtagClick?.(hashtag)}
+              >
+                <Tag className="h-3 w-3 mr-1" />
+                {hashtag}
+              </Badge>
+            ))}
+            {(recipe.hashtags as string[]).length > 3 && (
+              <span className="text-xs text-medium-gray">+{(recipe.hashtags as string[]).length - 3}</span>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div className="flex items-center text-sm text-medium-gray">
             <Clock className="h-4 w-4 mr-1" />

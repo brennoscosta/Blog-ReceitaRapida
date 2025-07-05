@@ -1,15 +1,73 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { RecipeCard } from "@/components/RecipeCard";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { X, Filter } from "lucide-react";
 import type { Recipe } from "@shared/schema";
 
 export default function Home() {
+  const [activeFilters, setActiveFilters] = useState<{
+    category?: string;
+    subcategory?: string;
+    hashtag?: string;
+  }>({});
+
   const { data: recipes, isLoading } = useQuery<Recipe[]>({
     queryKey: ["/api/recipes"],
   });
+
+  // Filtrar receitas baseado nos filtros ativos
+  const filteredRecipes = useMemo(() => {
+    if (!recipes) return [];
+    
+    return recipes.filter(recipe => {
+      if (activeFilters.category && recipe.category !== activeFilters.category) {
+        return false;
+      }
+      if (activeFilters.subcategory && recipe.subcategory !== activeFilters.subcategory) {
+        return false;
+      }
+      if (activeFilters.hashtag && !Array.isArray(recipe.hashtags)) {
+        return false;
+      }
+      if (activeFilters.hashtag && !(recipe.hashtags as string[])?.includes(activeFilters.hashtag)) {
+        return false;
+      }
+      return true;
+    });
+  }, [recipes, activeFilters]);
+
+  const handleCategoryFilter = (category: string) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      category: prev.category === category ? undefined : category,
+      subcategory: undefined // Limpar subcategoria ao mudar categoria
+    }));
+  };
+
+  const handleSubcategoryFilter = (subcategory: string) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      subcategory: prev.subcategory === subcategory ? undefined : subcategory
+    }));
+  };
+
+  const handleHashtagFilter = (hashtag: string) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      hashtag: prev.hashtag === hashtag ? undefined : hashtag
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters({});
+  };
+
+  const hasActiveFilters = Object.values(activeFilters).some(filter => filter !== undefined);
 
   const scrollToRecipes = () => {
     const recipesSection = document.getElementById('recipes');
@@ -46,9 +104,59 @@ export default function Home() {
         {/* Latest Recipes */}
         <div id="recipes" className="py-16 bg-light-gray">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">
-              Últimas Receitas
+            <h3 className="text-3xl font-bold text-center text-gray-800 mb-8">
+              {hasActiveFilters ? 'Receitas Filtradas' : 'Últimas Receitas'}
             </h3>
+
+            {/* Filtros Ativos */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-3 justify-center mb-8">
+                <Filter className="h-4 w-4 text-fresh-green" />
+                <span className="text-sm font-medium text-gray-600">Filtros ativos:</span>
+                
+                {activeFilters.category && (
+                  <Badge 
+                    variant="default"
+                    className="bg-fresh-green text-white cursor-pointer hover:bg-dark-green"
+                    onClick={() => handleCategoryFilter(activeFilters.category!)}
+                  >
+                    {activeFilters.category}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                )}
+                
+                {activeFilters.subcategory && (
+                  <Badge 
+                    variant="outline"
+                    className="border-fresh-green text-fresh-green cursor-pointer hover:bg-fresh-green hover:text-white"
+                    onClick={() => handleSubcategoryFilter(activeFilters.subcategory!)}
+                  >
+                    {activeFilters.subcategory}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                )}
+                
+                {activeFilters.hashtag && (
+                  <Badge 
+                    variant="secondary"
+                    className="bg-warm-orange text-white cursor-pointer hover:bg-orange-600"
+                    onClick={() => handleHashtagFilter(activeFilters.hashtag!)}
+                  >
+                    {activeFilters.hashtag}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                )}
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-medium-gray hover:text-gray-800 hover:bg-gray-100"
+                >
+                  Limpar todos
+                </Button>
+              </div>
+            )}
             
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -66,11 +174,34 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : recipes && recipes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {recipes.map((recipe) => (
-                  <RecipeCard key={recipe.id} recipe={recipe} />
-                ))}
+            ) : filteredRecipes && filteredRecipes.length > 0 ? (
+              <>
+                <div className="text-center mb-6 text-medium-gray">
+                  Mostrando {filteredRecipes.length} de {recipes?.length || 0} receitas
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredRecipes.map((recipe) => (
+                    <RecipeCard 
+                      key={recipe.id} 
+                      recipe={recipe}
+                      onCategoryClick={handleCategoryFilter}
+                      onSubcategoryClick={handleSubcategoryFilter}
+                      onHashtagClick={handleHashtagFilter}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : hasActiveFilters ? (
+              <div className="text-center py-12">
+                <p className="text-lg text-medium-gray mb-4">
+                  Nenhuma receita encontrada com os filtros selecionados.
+                </p>
+                <Button 
+                  onClick={clearAllFilters}
+                  className="bg-fresh-green hover:bg-dark-green text-white"
+                >
+                  Limpar Filtros
+                </Button>
               </div>
             ) : (
               <div className="text-center py-12">
