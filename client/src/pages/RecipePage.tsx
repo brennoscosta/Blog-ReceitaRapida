@@ -324,27 +324,7 @@ export default function RecipePage() {
             </Card>
           )}
 
-          {/* Hashtags Section */}
-          {Array.isArray(recipe.hashtags) && recipe.hashtags.length > 0 && (
-            <Card className="mt-8">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Tags da Receita
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {recipe.hashtags.map((hashtag: string, index: number) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary"
-                      className="bg-fresh-green/10 text-fresh-green hover:bg-fresh-green/20"
-                    >
-                      {hashtag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
 
           {/* Related Recipes */}
           {relatedRecipes && relatedRecipes.length > 0 && (
