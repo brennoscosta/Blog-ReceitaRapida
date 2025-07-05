@@ -95,6 +95,7 @@ This is a modern, automated recipe blog application called "Receita Rápida" (Qu
 - July 04, 2025. Changed to GPT-3.5-turbo and DALL-E 2 for cost optimization per user request
 - July 04, 2025. Implemented complete auto-generation system with admin controls and real-time stats
 - July 04, 2025. Enhanced recipe system: increased hashtags from 5 to 10, added category and subcategory fields for filtering
+- July 05, 2025. Implemented AWS S3 integration: automatic image compression (WebP format), optimized storage, and CDN-ready URLs for all generated recipe images
 
 ## User Preferences
 

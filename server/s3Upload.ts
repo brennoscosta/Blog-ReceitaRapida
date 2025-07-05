@@ -9,7 +9,7 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION || 'us-east-1'
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'receita-rapida-images';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'receita-rapida-test-bucket';
 
 interface ImageUploadResult {
   url: string;
