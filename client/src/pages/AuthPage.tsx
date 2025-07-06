@@ -132,7 +132,7 @@ export default function AuthPage() {
                           <FormControl>
                             <Input 
                               type="email" 
-                              placeholder="admin@admin.com"
+                              placeholder="Digite seu email"
                               {...field}
                             />
                           </FormControl>
@@ -151,7 +151,7 @@ export default function AuthPage() {
                             <div className="relative">
                               <Input 
                                 type={showPassword ? "text" : "password"}
-                                placeholder="123456"
+                                placeholder="Digite sua senha"
                                 {...field}
                               />
                               <button
