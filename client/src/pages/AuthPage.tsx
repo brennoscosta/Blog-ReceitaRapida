@@ -119,9 +119,6 @@ export default function AuthPage() {
                 <CardTitle className="text-2xl text-center text-gray-800">
                   Acesso Administrativo
                 </CardTitle>
-                <p className="text-center text-gray-600 mt-2">
-                  Use: admin@admin.com / senha: 123456
-                </p>
               </CardHeader>
               <CardContent>
                 <Form {...loginForm}>
